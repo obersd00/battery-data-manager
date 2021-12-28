@@ -10,9 +10,9 @@ def file2dataset(filename):
 #Input: filename(.xlsx)
 #Output: batteryDataSet class object
     COL_NAMES_LAND = [['Cycle','SpeCapC/mAh/g','SpeCapD/mAh/g','Efficiency/%','MedVoltC/V','MedVoltD/V'],['','','','','',''],
-        ['SpeCap/mAh/g','Voltage/V','Cycle-Index','Step-Index','','']] #add empty strings for consistent array dimensions
+        ['SpeCap/mAh/g','Voltage/V','Cycle-Index','Step-Index','TestTime','']] #add empty strings for consistent array dimensions
 
-    COL_NAMES_ARBIN = np.array(['Step_Index','Cycle_Index','Current(A)','Voltage(V)','Charge_Capacity(Ah)','Discharge_Capacity(Ah)'])
+    COL_NAMES_ARBIN = np.array(['Step_Index','Cycle_Index','Current(A)','Voltage(V)','Charge_Capacity(Ah)','Discharge_Capacity(Ah)', 'Test_Time(s)'])
 
     if filename[-5:] != '.xlsx' and filename[-4:] != '.xls':
         return #add a file type error message in here to be more user friendly

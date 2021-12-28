@@ -12,10 +12,11 @@ class batteryDataSet:
  
         self.cyclenumbers = np.array(data_header_dictionary.get('Cycle_Index')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Cycle-Index2'))
         self.speCapData = np.array(data_header_dictionary.get('Discharge_Capacity(Ah)')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('SpeCap/mAh/g2'))
-        self.voltageData =  #Arbin: 'Voltage(V)' | Land: 'Voltage/V2'
-        self.step_index_record = #Arbin:'Step_Index' | Land: 'Step_Index2'
-        self.cycle_index_record = #Arbin: 'Cycle_Index' | Land: 'Cycle-Index2'
-        self.test_time_record = #Arbin: 'Test_Time(s)' | Land: 'TestTime2'
+        self.voltageData =  np.array(data_header_dictionary.get('Voltage(V)')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Voltage/V2'))
+        self.step_index_record = np.array(data_header_dictionary.get('Step_Index')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Step_Index2'))
+        self.cycle_index_record = np.array(data_header_dictionary.get('Cycle_Index')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Cycle-Index2'))
+        self.test_time_record =  np.array(data_header_dictionary.get('Test_Time(s)')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('TestTime2'))
+
          
         #self.charge_capacity_stats = charge_capacity_stats #Arbin: 'Charge_Capacity(Ah)' | Land: 'SpeCapC/mAh/g'
         #self.discharge_capacity_stats = discharge_capacity_stats #Arbin: 'Discharge_Capacity(Ah)' | Land: 'SpeCapD/mAh/g'
