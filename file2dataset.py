@@ -35,12 +35,13 @@ def file2dataset(filename):
     elif sysFormat == "Arbin":
         sheets=workbook.sheet_names() 
         datasets = [sheet for sheet in sheets if 'Channel' in sheet] #select subset of sheets containing desired information for dataset
+        dataset_obj = [None for dataset in range(len(datasets))]
         tabColNames = [None for sheet in range(len(datasets))]
         for i in range(len(datasets)):
-            tabColNames[i] = workbook.sheet_by_index(i).row_values(0)
+            tabColNames[i] = workbook.sheet_by_name(datasets[i]).row_values(0)
             header_dict={} #for Arbin multiple datasets per file may be expected so this is re-initialized on each loop iteration to create a batteryDataSet object for each sheet
             for dataColName in COL_NAMES_ARBIN:
-                header_dict[dataColName+str(i)] = workbook.sheet_by_index(i).col_values(tabColNames[i].index(dataColName),1) 
+                header_dict[dataColName] = workbook.sheet_by_name(datasets[i]).col_values(tabColNames[i].index(dataColName),1) 
             dataset_obj[i] = batteryDataSet(sysFormat='Arbin',data_header_dictionary=header_dict) #construct array of batteryDataSet object with 1 entry per cell
 
     return dataset_obj

@@ -5,9 +5,9 @@ class batteryDataSet:
         #Integer suffixes are added (e.g. 'Cycle0' instead of 'Cycle' for Land data) to prevent ambiguity about that tab from which they came in the excel file
         import numpy as np
         if sysFormat=='Arbin':
-            combined _capacity_data = []
-            for i in range(len(data_header_dictionary.get('Charge_Capacity(Ah)')):
-                combined_capacity_data[i] = data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if data_header_dictionary.get('Current(A)')[i] < 0 else data_header_dictionary.get('Charge_Capacity(Ah)')
+            combined_capacity_data = np.empty([len(data_header_dictionary.get('Charge_Capacity(Ah)')),1])
+            for i in range(len(data_header_dictionary.get('Charge_Capacity(Ah)'))):
+                combined_capacity_data[i] = data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if data_header_dictionary.get('Current(A)')[i] < 0 else data_header_dictionary.get('Charge_Capacity(Ah)')[i]
             data_header_dictionary['Discharge_Capacity(Ah)'] = combined_capacity_data
  
         self.cyclenumbers = np.array(data_header_dictionary.get('Cycle_Index')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Cycle-Index2'))
