@@ -1,4 +1,4 @@
-
+import datetime
 class batteryDataSet:
     'Class to provide consistent format for dataset representations'
     def __init__(self,data_header_dictionary,sysFormat='Arbin'):
@@ -9,7 +9,21 @@ class batteryDataSet:
             for i in range(len(data_header_dictionary.get('Charge_Capacity(Ah)'))):
                 combined_capacity_data[i] = data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if data_header_dictionary.get('Current(A)')[i] < 0 else data_header_dictionary.get('Charge_Capacity(Ah)')[i]
             data_header_dictionary['Discharge_Capacity(Ah)'] = combined_capacity_data
- 
+
+        else:
+            temp_time_record = test_time_record
+            test_time_record = []
+            for test_time in temp_time_record:
+                if '-' in str(test_time):
+                    test_time = test_time.split('-')
+                    hours_mins_secs = test_time[1]
+                    hours_mins_secs = hours_mins_secs.split(':')
+                    test_time = (int(test_time[0]) * 86400) + (int(hours_mins_secs[0]) * 3600) + (
+                                int(hours_mins_secs[1]) * 60) + int(hours_mins_secs[2])
+                else:
+                    test_time = 86400 * float(test_time)
+                test_time_record.append(test_time)
+
         self.cyclenumbers = np.array(data_header_dictionary.get('Cycle_Index')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Cycle-Index2'))
         self.speCapData = np.array(data_header_dictionary.get('Discharge_Capacity(Ah)')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('SpeCap/mAh/g2'))
         self.voltageData =  np.array(data_header_dictionary.get('Voltage(V)')) if sysFormat == 'Arbin' else np.array(data_header_dictionary.get('Voltage/V2'))
