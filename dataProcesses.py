@@ -6,7 +6,16 @@ import numpy as np
 
 
 def specificCapacity(cycleNumberData,currentData,speCapData): #outputs specific charge/discharge capacity as fcn of cycle number
-    return [cycle_index,charge_capacities,discharge_capacities]
+    num_cycles = int(np.amax(cycleNumberData))
+    specificCapacityData = np.empty([num_cycles-1, 3])
+    for cycnum in range(1, num_cycles-1):
+        cycle_indices = np.where(cycleNumberData==cycnum)[0]
+        cycle_charge_indices = np.array([index for index in cycle_indices if currentData[index] > 0])
+        cycle_discharge_indices = np.array([index for index in cycle_indices if currentData[index] < 0])
+        charge_capacities = [speCapData[index] for index in cycle_charge_indices]
+        discharge_capacities = [speCapData[index] for index in cycle_discharge_indices]
+        specificCapacityData[cycnum] = [cycnum, charge_capacities, discharge_capacities]
+    return specificCapacityData
 
 def meanVoltage(cycleNumberData,currentData,voltageData): #outputs mean charge/discharge voltage & hysteresis as fcn of cycle number
     num_cycles = int(np.amax(cycleNumberData))
