@@ -8,7 +8,7 @@ class batteryDataSet:
             combined_capacity_data = np.empty([len(data_header_dictionary.get('Charge_Capacity(Ah)')),1])
             for i in range(len(data_header_dictionary.get('Charge_Capacity(Ah)'))):
                 combined_capacity_data[i] = data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if data_header_dictionary.get('Current(A)')[i] < 0 else data_header_dictionary.get('Charge_Capacity(Ah)')[i]
-            data_header_dictionary['Discharge_Capacity(Ah)'] = combined_capacity_data
+            data_header_dictionary['Discharge_Capacity(Ah)'] = combined_capacity_data/active_mass
 
         else:
             temp_time_record = data_header_dictionary.get('TestTime2')

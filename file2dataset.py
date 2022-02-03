@@ -33,8 +33,12 @@ def file2dataset(filename):
                     header_dict[dataColName+str(i)] = workbook.sheet_by_index(i).col_values(tabColNames[i].index(dataColName),1) #construct dictionary associating column titles with datasets
         dataset_obj = batteryDataSet(sysFormat='Land',data_header_dictionary=header_dict) #get batteryDataSet object
     elif sysFormat == "Arbin":
-        sheets=workbook.sheet_names() 
-        datasets = [sheet for sheet in sheets if 'Channel' in sheet] #select subset of sheets containing desired information for dataset
+        sheets=workbook.sheet_names()
+        for sheet in sheets:
+            if '-' not in sheet.split('_')[-1]:
+                dataset_sheet_num = int(sheet.split('_')[-1])
+                 
+        datasets = [sheet for sheet in sheets if 'Channel' in sheet] #how to handle large datasets occupying multiple sheets?
         dataset_obj = [None for dataset in range(len(datasets))]
         tabColNames = [None for sheet in range(len(datasets))]
         for i in range(len(datasets)):
@@ -45,3 +49,4 @@ def file2dataset(filename):
             dataset_obj[i] = batteryDataSet(sysFormat='Arbin',data_header_dictionary=header_dict) #construct array of batteryDataSet object with 1 entry per cell
 
     return dataset_obj
+
