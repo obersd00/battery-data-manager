@@ -52,7 +52,7 @@ def show_plot():
     pane1 = plotfig.add_subplot(111)
     datasetName = selectedData.get()
     print(datasetName)
-    pane1.plot(dataSets.get('mean_voltage_data')[0],dataSets.get('mean_voltage_data')[3],'o',c=[0,0,0]) #this preset should plot specific discharge capacity
+    pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[3],'o',c=[0,0,0]) #this preset should plot specific discharge capacity
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.RIGHT)
