@@ -50,6 +50,8 @@ def show_plot():
     #plt.xticks(fontname = 'Arial', fontsize = 12)
     #plt.yticks(fontname = 'Arial', fontsize = 12)
     pane1 = plotfig.add_subplot(111)
+    datasetName = selectedData.get()
+    print(datasetName)
     pane1.plot(dataSets.get('mean_voltage_data')[0],dataSets.get('mean_voltage_data')[3],'o',c=[0,0,0]) #this preset should plot specific discharge capacity
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
@@ -69,15 +71,18 @@ main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
 main_window.geometry("%ix%i" %(screen_size[0]/2,screen_size[1]/2))
+
 plotDataSetButton = tk.Button(main_window,command = show_plot)
 plotDataSetButton['text'] = 'Plot Data'
 plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
+
 addDataFileButton = tk.Button(main_window,command = importDataFile)
 addDataFileButton['text'] = 'Select Data File'
 addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
-defaultData = tk.StringVar()
-defaultData.set('Specific Capacity')
-dataSelect = tk.OptionMenu(main_window, defaultData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve')
+
+selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
+selectedData.set('Specific Capacity') #this is the default dataset
+dataSelect = tk.OptionMenu(main_window, selectedData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve')
 dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
 dataSelect.config(width = 15)
 #show_plot()
