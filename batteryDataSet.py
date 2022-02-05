@@ -3,6 +3,7 @@ class batteryDataSet:
     'Class to provide consistent format for dataset representations'
     def __init__(self,data_header_dictionary,sysFormat='Arbin',active_mass=None):
         #Integer suffixes are added (e.g. 'Cycle0' instead of 'Cycle' for Land data) to prevent ambiguity about that tab from which they came in the excel file
+        #print(data_header_dictionary)
         import numpy as np
         if sysFormat=='Arbin':
             combined_capacity_data = np.empty([len(data_header_dictionary.get('Charge_Capacity(Ah)')),1])
