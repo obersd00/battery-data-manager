@@ -34,9 +34,9 @@ def file2dataset(filename):
         dataset_obj = batteryDataSet(sysFormat='Land',data_header_dictionary=header_dict) #get batteryDataSet object
     elif sysFormat == "Arbin":
         sheets=workbook.sheet_names()
-        for sheet in sheets:
-            if '-' not in sheet.split('_')[-1]:
-                dataset_sheet_num = int(sheet.split('_')[-1])
+        #for sheet in sheets:
+            #if '-' not in sheet.split('_')[-1]:
+                #dataset_sheet_num = int(sheet.split('_')[-1])
                  
         datasets = [sheet for sheet in sheets if 'Channel' in sheet] #how to handle large datasets occupying multiple sheets?
         dataset_obj = [None for dataset in range(len(datasets))]
