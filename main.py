@@ -78,12 +78,13 @@ def show_plot():
         for i in range len(cycle_numbers):
             s = symbol_counter % 4
             c = symbol_counter % 7
-            dataSets['Voltage Curve'] = voltageCurve(i, batteryData.cyclenumbers, batteryData.speCapData,
-                                                     batteryData.voltageData)
-            pane1.plot(dataSets.get(datasetName)[0], dataSets.get(datasetName)[1], symbols[s], c=[colors[c])
-            pane1.set_xlabel('Specific Capacity (mAh / g)', fontname='Arial', fontsize=12)
-            pane1.set_ylabel('Voltage (V)', fontname='Arial', fontsize=12)
             symbol_counter += 1
+        dataSets['Voltage Curve'] = voltageCurve(i, batteryData.cyclenumbers, batteryData.speCapData,
+                                                     batteryData.voltageData)
+        pane1.plot(dataSets.get(datasetName)[0], dataSets.get(datasetName)[1], symbols[s], c=[colors[c])
+        pane1.set_xlabel('Specific Capacity (mAh / g)', fontname='Arial', fontsize=12)
+        pane1.set_ylabel('Voltage (V)', fontname='Arial', fontsize=12)
+
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
@@ -99,6 +100,10 @@ def show_plot():
                 cycle_numbers[i] = int(cycle_numbers[i])
             # except ValueError:   #maybe end function if invalid input or display something to user
                 # return
+        for i in range len(cycle_numbers):
+            s = symbol_counter % 4
+            c = symbol_counter % 7
+            symbol_counter += 1
         dataSets["dQ/dV curve"] = dQdVcurve(i,cycleNumberData,speCapData,voltageData)
         pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s], c=[colors[c])#plot by cycle format
         pane1.set_xlabel('Voltage (V)',fontname='Arial',fontsize=12)
