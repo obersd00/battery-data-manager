@@ -54,8 +54,8 @@ def show_plot():
         for dataset in range(num_datasets):
             dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].speCapData)
             dataSets[dataset]['Mean Voltage'] = meanVoltage(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].voltageData)
-            #dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-            #dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
+            dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
+            dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
     plotfig = plt.figure(figsize = (4,4),dpi = 100)
     #ax = plotfig.gca()
     #plt.xticks(fontname = 'Arial', fontsize = 12)
@@ -80,12 +80,13 @@ def show_plot():
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
-        dataSets['Voltage Curve'] = voltageCurve(1,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
-        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        dataSets[0]['Voltage Curve'] = voltageCurve(1,batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
+        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
     elif datasetName == "dQ/dV curve":
-        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        dataSets[0]['dQ/dV curve'] = dQdVcurve(1,batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
+        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
         pane1.set_xlabel('Voltage (V)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)',fontname='Arial',fontsize=10)
     else:
@@ -106,7 +107,7 @@ def importDataFile():
         dataSets = {}
         dataSets['Specific Capacity'] = specificCapacity(batteryData.cyclenumbers,batteryData.currentData,batteryData.speCapData)
         dataSets['Mean Voltage'] = meanVoltage(batteryData.cyclenumbers,batteryData.currentData,batteryData.voltageData)
-        #dataSets['Voltage Curve'] = voltageCurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+        dataSets['Voltage Curve'] = voltageCurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
         dataSets['dQ/dV curve'] = dQdVcurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
     else: #list type dataset from arbin
         Format = batteryData[0].sysFormat

@@ -42,14 +42,14 @@ def voltageCurve(cycleNumber,cycleNumberData,speCapData,voltageData): #outputs v
     return [specific_capacity,voltage]
 
 def dQdVcurve(cycleNumber,cycleNumberData,speCapData,voltageData): #outputs differential of specific capacity w.r.t. voltage (dQ/dV) as fcn of voltage for a specified cycle number
-	cycle_indices = np.where(cycleNumberData==cycleNumber)
-	voltage = np.array([voltageData[index] for index in cycle_indices]).transpose()
-	specific_capacity = np.array([speCapData[index] for index in cycle_indices]).transpose()
-	num_points = np.size(voltage)
-	#print(specific_capacity[2],voltage[2])
-	dqdv = np.empty([num_points-2]).transpose()
-	for point in range(1,num_points-2): #compute centralized derivative
-		dqdv[point-1] = (specific_capacity[point+1]-specific_capacity[point-1])/(voltage[point+1]-voltage[point-1])
-	return [voltage[1:-1],dqdv]
+    cycle_indices = np.where(cycleNumberData==cycleNumber)
+    specific_capacity = np.array([speCapData[index] for index in cycle_indices]).transpose()
+    voltage = np.array([voltageData[index] for index in cycle_indices]).transpose()
+    num_points = np.size(voltage)
+    #print(voltageData[2])
+    dqdv = np.empty([num_points-2]).transpose()
+    for point in range(1,num_points-2): #compute centralized derivative
+        dqdv[point-1] = (specific_capacity[point+1]-specific_capacity[point-1])/(voltage[point+1]-voltage[point-1])
+    return [voltage[1:-1],dqdv]
 
 
