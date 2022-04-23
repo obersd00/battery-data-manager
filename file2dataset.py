@@ -31,7 +31,8 @@ def file2dataset(filename):
             for dataColName in COL_NAMES_LAND[i]: 
                 if dataColName in tabColNames[i] and dataColName != '': #iterate over all data columns in input file which are recognized by batteryDataSet class
                     header_dict[dataColName+str(i)] = workbook.sheet_by_index(i).col_values(tabColNames[i].index(dataColName),1) #construct dictionary associating column titles with datasets
-        dataset_obj = batteryDataSet(sysFormat='Land',data_header_dictionary=header_dict) #get batteryDataSet object
+        dataset_obj = list()
+        dataset_obj.append(batteryDataSet(sysFormat='Land',data_header_dictionary=header_dict)) #get batteryDataSet object
     elif sysFormat == "Arbin":
         sheets=workbook.sheet_names()
         #for sheet in sheets:

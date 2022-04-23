@@ -64,51 +64,18 @@ def show_plot():
         pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
         pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
     elif datasetName == "Voltage Curve": 
-        cycle_numbers = set_cycle_numbers.get()#retrieve user input providing cycle numbers
-        #string of comma separated integers
-        cycle_numbers = cycle_numbers.split(",")
-        symbols = ['o', '-', 'x', '*']
-        colors = [(255,0,0), (0,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
-        symbol_counter = 0
-        for i in range len(cycle_numbers):
-            try:
-                cycle_numbers[i] = int(cycle_numbers[i])
-            #except ValueError:   #maybe end function if invalid input or display something to user
-                #return
-        for i in range len(cycle_numbers):
-            s = symbol_counter % 4
-            c = symbol_counter % 7
-            symbol_counter += 1
-        dataSets['Voltage Curve'] = voltageCurve(i, batteryData.cyclenumbers, batteryData.speCapData,
-                                                     batteryData.voltageData)
-        pane1.plot(dataSets.get(datasetName)[0], dataSets.get(datasetName)[1], symbols[s], c=[colors[c])
-        pane1.set_xlabel('Specific Capacity (mAh / g)', fontname='Arial', fontsize=12)
-        pane1.set_ylabel('Voltage (V)', fontname='Arial', fontsize=12)
-
+        cycle_numbers = set_cycle_numbers.get() #retrieve user input providing cycle numbers
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
-
+        dataSets['Voltage Curve'] = voltageCurve(1,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
+        pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
     elif datasetName == "dQ/dV curve":
-        cycle_numbers = set_cycle_numbers.get()
-        cycle_numbers = cycle_numbers.split(",")
-        symbols = ['o', '-', 'x', '*']
-        colors = [(255, 0, 0), (0, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
-        symbol_counter = 0
-        for i in range len(cycle_numbers):
-            try:
-                cycle_numbers[i] = int(cycle_numbers[i])
-            # except ValueError:   #maybe end function if invalid input or display something to user
-                # return
-        for i in range len(cycle_numbers):
-            s = symbol_counter % 4
-            c = symbol_counter % 7
-            symbol_counter += 1
-        dataSets["dQ/dV curve"] = dQdVcurve(i,cycleNumberData,speCapData,voltageData)
-        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s], c=[colors[c])#plot by cycle format
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         pane1.set_xlabel('Voltage (V)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)',fontname='Arial',fontsize=10)
-        symbol_counter += 1
     else:
        pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
