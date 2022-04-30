@@ -12,7 +12,7 @@ class batteryDataSet:
             combined_capacity_data = np.empty([len(data_header_dictionary.get('Charge_Capacity(Ah)')),1]).squeeze()
             for i in range(len(data_header_dictionary.get('Charge_Capacity(Ah)'))):
                 combined_capacity_data[i] = data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if data_header_dictionary.get('Current(A)')[i] < 0 else data_header_dictionary.get('Charge_Capacity(Ah)')[i]
-            data_header_dictionary['Discharge_Capacity(Ah)'] = combined_capacity_data/active_mass
+            data_header_dictionary['Arbin_Discharge_Capacity(Ah)'] = combined_capacity_data # /active_mass
 
         else:
             temp_time_record = data_header_dictionary.get('TestTime2')
@@ -43,9 +43,9 @@ class batteryDataSet:
                 combined_capacity_data = np.empty([len(self.data_header_dictionary.get('Charge_Capacity(Ah)')),1]).squeeze()
                 for i in range(len(self.data_header_dictionary.get('Charge_Capacity(Ah)'))):
                     combined_capacity_data[i] = self.data_header_dictionary.get('Discharge_Capacity(Ah)')[i] if self.data_header_dictionary.get('Current(A)')[i] < 0 else self.data_header_dictionary.get('Charge_Capacity(Ah)')[i]
-                self.data_header_dictionary['Discharge_Capacity(Ah)'] = 1000*combined_capacity_data/active_mass
+                self.data_header_dictionary['Arbin_Discharge_Capacity(Ah)'] = 1000*combined_capacity_data/active_mass
             self.active_mass = active_mass
-            self.speCapData = self.data_header_dictionary.get('Discharge_Capacity(Ah)')
+            self.speCapData = self.data_header_dictionary.get('Arbin_Discharge_Capacity(Ah)')
         #self.charge_capacity_stats = charge_capacity_stats #Arbin: 'Charge_Capacity(Ah)' | Land: 'SpeCapC/mAh/g'
         #self.discharge_capacity_stats = discharge_capacity_stats #Arbin: 'Discharge_Capacity(Ah)' | Land: 'SpeCapD/mAh/g'
         #self.charge_voltage_stats = charge_voltage_stats #Arbin: 'Voltage(V)' | Land: 'MedVoltC/V'
