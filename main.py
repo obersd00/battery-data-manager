@@ -65,11 +65,29 @@ def show_plot():
         pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
     elif datasetName == "Voltage Curve": 
         cycle_numbers = set_cycle_numbers.get() #retrieve user input providing cycle numbers
+        is_integers = True
+        for cycle in cycle_numers:
+            cycle_numbers[cycle_numbers.index(cycle)] = int(cycle)
+        if type(cycle_numbers) == list:
+            is_list = True
+        for cycle in cycle_numbers:
+            if type(cycle) != int:
+                is_integers = False
+        if not (is_integers and is_list):
+            print("Please enter valid input. This must be a list of comma separated integers.")
+
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
-        dataSets['Voltage Curve'] = voltageCurve(1,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
-        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        symbols = ['o', '*', '.', '~']
+        colors = [(0,0,0),(255,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+        counter = 8
+        for i in range(len(cycle_numbers)):
+            s = counter % 4
+            c = counter % 7
+            dataSets['Voltage Curve'] = voltageCurve(i,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+            pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s],c=colors[c])
+            counter += 1
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
     elif datasetName == "dQ/dV curve":
