@@ -66,7 +66,7 @@ def show_plot():
     elif datasetName == "Voltage Curve": 
         cycle_numbers = set_cycle_numbers.get() #retrieve user input providing cycle numbers
         is_integers = True
-        for cycle in cycle_numers:
+        for cycle in cycle_numbers:
             cycle_numbers[cycle_numbers.index(cycle)] = int(cycle)
         if type(cycle_numbers) == list:
             is_list = True
