@@ -74,7 +74,7 @@ def show_plot():
             if type(cycle) != int:
                 is_integers = False
         if not (is_integers and is_list):
-            print("Please enter valid input. This must be a list of comma separated integers.")
+            print("Please enter valid input. This is a list of comma separated integers.")
 
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
