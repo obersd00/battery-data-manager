@@ -44,18 +44,6 @@ global dataSets
 
 def show_plot():
     global dataSets,batteryData
-    if batteryData[0].sysFormat == 'Arbin':
-        if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
-            #print(np.nonzero(batteryData[0].currentData))
-            active_mass = batteryData[0].currentData[np.nonzero(batteryData[0].currentData)[0][2]]/(float(mass_entry.get())*0.180) #180 mAh/g assumed initially, add input options for this later
-        elif selectedEntryMode.get() == 'Enter Mass Manually:':
-	        active_mass = float(mass_entry.get())/1000 #assume entry in mg
-        batteryData[0].recalculate(active_mass)
-        for dataset in range(num_datasets):
-            dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].speCapData)
-            dataSets[dataset]['Mean Voltage'] = meanVoltage(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].voltageData)
-            dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-            dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
     plotfig = plt.figure(figsize = (4,4),dpi = 100)
     #ax = plotfig.gca()
     #plt.xticks(fontname = 'Arial', fontsize = 12)
@@ -64,73 +52,48 @@ def show_plot():
     datasetName = selectedData.get()
     if datasetName == "Specific Capacity":
 	    #apply default format settings for specific capacity plot
-        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
         #pane1.set_xticks(fontname='Arial',fontsize=12)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)',fontname='Arial',fontsize=10)
         #panel.set_yticks(fontname='Arial',fontsize=12)
 		
     elif datasetName == "Mean Voltage":
-        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
-        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[2],'*',c=[0,0,0])
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
         pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
         pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
     elif datasetName == "Voltage Curve": 
-        cycle_numbers = set_cycle_numbers.get()#retrieve user input providing cycle numbers
-        #string of comma separated integers
-        cycle_numbers = cycle_numbers.split(",")
-        symbols = ['o', '-', 'x', '*']
-        colors = [(255,0,0), (0,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
-        symbol_counter = 0
-        for i in range len(cycle_numbers):
-            try:
-                cycle_numbers[i] = int(cycle_numbers[i])
-            #except ValueError:   #maybe end function if invalid input or display something to user
-                #return
-        for i in range len(cycle_numbers):
-            s = symbol_counter % 4
-            c = symbol_counter % 7
-            symbol_counter += 1
-        dataSets['Voltage Curve'] = voltageCurve(i, batteryData.cyclenumbers, batteryData.speCapData,
-                                                     batteryData.voltageData)
-        pane1.plot(dataSets.get(datasetName)[0], dataSets.get(datasetName)[1], symbols[s], c=[colors[c])
-        pane1.set_xlabel('Specific Capacity (mAh / g)', fontname='Arial', fontsize=12)
-        pane1.set_ylabel('Voltage (V)', fontname='Arial', fontsize=12)
+        cycle_numbers = set_cycle_numbers.get() #retrieve user input providing cycle numbers
+        is_integers = True
+        for cycle in cycle_numbers:
+            cycle_numbers[cycle_numbers.index(cycle)] = int(cycle)
+        if type(cycle_numbers) == list:
+            is_list = True
+        for cycle in cycle_numbers:
+            if type(cycle) != int:
+                is_integers = False
+        if not (is_integers and is_list):
+            print("Please enter valid input. This is a list of comma separated integers.")
 
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
-<<<<<<< HEAD
-
-    elif datasetName == "dQ/dV curve":
-        cycle_numbers = set_cycle_numbers.get()
-        cycle_numbers = cycle_numbers.split(",")
-        symbols = ['o', '-', 'x', '*']
-        colors = [(255, 0, 0), (0, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
-        symbol_counter = 0
-        for i in range len(cycle_numbers):
-            try:
-                cycle_numbers[i] = int(cycle_numbers[i])
-            # except ValueError:   #maybe end function if invalid input or display something to user
-                # return
-        for i in range len(cycle_numbers):
-            s = symbol_counter % 4
-            c = symbol_counter % 7
-            symbol_counter += 1
-        dataSets["dQ/dV curve"] = dQdVcurve(i,cycleNumberData,speCapData,voltageData)
-        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s], c=[colors[c])#plot by cycle format
-=======
-        dataSets[0]['Voltage Curve'] = voltageCurve(1,batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
+        symbols = ['o', '*', '.', '~']
+        colors = [(0,0,0),(255,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+        counter = 8
+        for i in range(len(cycle_numbers)):
+            s = counter % 4
+            c = counter % 7
+            dataSets['Voltage Curve'] = voltageCurve(i,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+            pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s],c=colors[c])
+            counter += 1
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
     elif datasetName == "dQ/dV curve":
-        dataSets[0]['dQ/dV curve'] = dQdVcurve(1,batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-        pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'o',c=[0,0,0])
->>>>>>> user_interface
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         pane1.set_xlabel('Voltage (V)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)',fontname='Arial',fontsize=10)
-        symbol_counter += 1
     else:
        pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
@@ -140,32 +103,14 @@ def show_plot():
 def importDataFile():
     global batteryData
     global dataSets
-    global num_datasets
+    dataSets = {}
     infile_name = tk.filedialog.askopenfile().name
     batteryData = file2dataset(infile_name)
-    #num_datasets = 1
-    if not isinstance(batteryData,list):
-        Format = batteryData.sysFormat
-        dataSets = {}
-        dataSets['Specific Capacity'] = specificCapacity(batteryData.cyclenumbers,batteryData.currentData,batteryData.speCapData)
-        dataSets['Mean Voltage'] = meanVoltage(batteryData.cyclenumbers,batteryData.currentData,batteryData.voltageData)
-        dataSets['Voltage Curve'] = voltageCurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
-        dataSets['dQ/dV curve'] = dQdVcurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
-    else: #list type dataset from arbin
-        Format = batteryData[0].sysFormat
-        num_datasets = len(batteryData)
-        dataSets = [{} for x in range(num_datasets)]
-        for dataset in range(num_datasets):
-            dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].speCapData)
-            dataSets[dataset]['Mean Voltage'] = meanVoltage(batteryData[dataset].cyclenumbers,batteryData[dataset].currentData,batteryData[dataset].voltageData)
-            #dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-            #dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-        mass_entry['state'] = tk.NORMAL
-            
-    print('Detected %s file format'%Format)
-    print('%d dataset(s) imported'%num_datasets)
-    print('Ready to Plot')
-    plotDataSetButton['state'] = tk.NORMAL
+    dataSets['Specific Capacity'] = specificCapacity(batteryData.cyclenumbers,batteryData.currentData,batteryData.speCapData)
+    dataSets['Mean Voltage'] = meanVoltage(batteryData.cyclenumbers,batteryData.currentData,batteryData.voltageData)
+    #dataSets['Voltage Curve'] = voltageCurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+    dataSets['dQ/dV curve'] = dQdVcurve(3,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+    print('Ready to plot')
 
 def onSelectData(self):
     if selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve':
@@ -177,19 +122,13 @@ def onSelectData(self):
 
 def onSelectEntryMode(self):
     if selectedEntryMode.get() == 'Enter Mass Manually:':
-        mass_entry.delete(0,END)
-        mass_entry.insert(0,'Enter mass (mg)')
-    elif selectedEntryMode.get() == 'Calculate:':
-	    #theor_capac_entry['state'] = tk.NORMAL
-        mass_entry.delete(0,END)
-        mass_entry.insert(0,'Enter initial C rate')
-        #make prompts & extra textbox active
+        pass
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
 main_window.geometry("%ix%i" %(screen_size[0]/2,screen_size[1]/2))
 
-plotDataSetButton = tk.Button(main_window,command = show_plot, state = tk.DISABLED)
+plotDataSetButton = tk.Button(main_window,command = show_plot)
 plotDataSetButton['text'] = 'Plot Data'
 plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
@@ -199,13 +138,11 @@ addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
 selectedEntryMode = tk.StringVar(main_window)
 selectedEntryMode.set('Calculate (enter initial C-rate):')
-mass_entry_mode = tk.OptionMenu(main_window,selectedEntryMode,'Enter Mass Manually:','Calculate:',command = onSelectEntryMode)
+mass_entry_mode = tk.OptionMenu(main_window,selectedEntryMode,'Enter Mass Manually:','Calculate (enter initial C-rate):',command = onSelectEntryMode)
 mass_entry_mode.place(relx = 0.15,rely = 0.4,anchor = 'center')
 mass_entry_mode.config(width = 25)
-mass_entry = tk.Entry(state = tk.DISABLED)
+mass_entry = tk.Entry()
 mass_entry.place(relx=0.4,rely=0.4,anchor = 'center')
-theor_capac_entry = tk.Entry(state=tk.DISABLED)
-theor_capac_entry.place(relx = 0.4, rely = 0.46, anchor='center')
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
 selectedData.set('Specific Capacity') #this is the default dataset
