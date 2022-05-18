@@ -91,6 +91,7 @@ def show_plot():
                 cycle_numbers[i] = int(cycle_numbers[i])
             except ValueError:  # maybe end function if invalid input or display something to user
                 return
+        cycle_dataSets = multiCurve(cycle_numbers,batteryData[0].speCapData,batteryData[0].voltageData)
         for i in range(len(cycle_numbers)):
             s = symbol_counter % 4
             c = symbol_counter % 7
@@ -177,7 +178,13 @@ def onSelectEntryMode(self):
         mass_entry.insert(0, 'Enter initial C rate')
         # make prompts & extra textbox active
 
-
+def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
+    # returns datasets corresponding to specified cycle numbers
+    # mainly for voltage and dqdv curve plotting
+    cycle_dataSets = np.empty([len(cycle_numbers),2]).squeeze()
+    for index in range(len(cycle_numbers)):
+        cycle_dataSets[index] = (np.array([x_datasets[cycle_numbers[index]],y_datasets[cycle_numbers[index]]]))
+    return cycle_dataSets
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(), main_window.winfo_screenheight()]
