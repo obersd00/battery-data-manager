@@ -7,36 +7,40 @@ import tkinter as tk
 from file2dataset import file2dataset
 from dataProcesses import *
 import batteryDataSet
-
 global batteryData
 global dataSets
 
 
-# Landt Format SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab']) COL_NAMES_LANDT = np.array([[
-# 'Cycle','CapC','CapD','SpeCapC','SpeCapD','Efficiency','EnergyC','EnergyD','MedVoltC','MedVoltD','CC-Cap',
-# 'CC-Perc',\ 'PlatCapD','PlatSpeCapD','PlatPercD','PlatTimeD','CaptnC','CaptnD','rd','rd2','SpeEnergyC',
-# 'SpeEnergyD','EndVoltD','RetentionD','DCIR_C',\ 'DCIR_D'],\ ['Step','Mode','Period','Capacity','SpeCap','Power',
-# 'Capacitance','SpeEnergy','MedVolt','StartVolt','EndVolt','','','','','','','','','', '','','','','',''],
-# \ ['Record','Test Time',\ 'Current','Capacity','SpeCap','SOC|DOD','Voltage','Energy','SpeEnergy','AuxTemp',
-# 'AuxVolt','SysTime','[All Auxiliary-Chl]*','Cycle-Index',\ 'Step-Index','Step-State','','','','','','','','',
-# '']]) #add empty strings for consistent array dimensions
 
-# Arbin Format COL_NAMES_ARBIN = np.array(['Data_Point','Test_Time(s)','Date_Time','Step_Time(s)','Step_Index',
-# 'Cycle_Index','Current(A)','Voltage(V)',\ 'Charge_Capacity(Ah)','Discharge_Capacity(Ah)','Charge_Energy(Wh)',
-# 'Discharge_Energy(Wh)','dV/dt(V/s)']) #a few other column names but they aren't typically populated
+#Landt Format
+#SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab'])
+#COL_NAMES_LANDT = np.array([['Cycle','CapC','CapD','SpeCapC','SpeCapD','Efficiency','EnergyC','EnergyD','MedVoltC','MedVoltD','CC-Cap','CC-Perc',\
+	#'PlatCapD','PlatSpeCapD','PlatPercD','PlatTimeD','CaptnC','CaptnD','rd','rd2','SpeEnergyC','SpeEnergyD','EndVoltD','RetentionD','DCIR_C',\
+	#'DCIR_D'],\
+	#['Step','Mode','Period','Capacity','SpeCap','Power','Capacitance','SpeEnergy','MedVolt','StartVolt','EndVolt','','','','','','','','','',
+	#'','','','','',''],\
+	#['Record','Test Time',\
+	#'Current','Capacity','SpeCap','SOC|DOD','Voltage','Energy','SpeEnergy','AuxTemp','AuxVolt','SysTime','[All Auxiliary-Chl]*','Cycle-Index',\
+	#'Step-Index','Step-State','','','','','','','','','']]) #add empty strings for consistent array dimensions
 
-# import N files with electrochemical datasets
-# total_files = 2
-# file_names = empty([total_files,2]) #second column to specify number of datasets for each file
+#Arbin Format
+#COL_NAMES_ARBIN = np.array(['Data_Point','Test_Time(s)','Date_Time','Step_Time(s)','Step_Index','Cycle_Index','Current(A)','Voltage(V)',\
+	#'Charge_Capacity(Ah)','Discharge_Capacity(Ah)','Charge_Energy(Wh)','Discharge_Energy(Wh)','dV/dt(V/s)']) #a few other column names but they aren't typically populated
 
-# for fn in range(total_files):
-# find number of datasets in file and construct array
-# file_names[fn,:] ='ANO Nb doping Data/Half Cell Tests/Temperature Optimization/093_ANO_LNO_700-r2_004_3-1.xlsx'
+#import N files with electrochemical datasets
+#total_files = 2
+#file_names = empty([total_files,2]) #second column to specify number of datasets for each file 
 
-# wb = xlrd2.open_workbook(workbook_location) cyclestats=wb.sheet_by_index(0) cc = cyclestats.ncols dataset=np.array(
-# [[float(cyclestats.cell_value(row+1,col)) for col in range(cyclestats.ncols)]for row in range(cyclestats.nrows-2)])
-# #import data from xlsx spreadsheet to np array format cycnum = dataset[1:cyclestats.nrows-1,0] #account for column
-# titles spec_caps = dataset[1:cyclestats.nrows-1,2]
+#for fn in range(total_files):
+		#find number of datasets in file and construct array
+	#	file_names[fn,:] ='ANO Nb doping Data/Half Cell Tests/Temperature Optimization/093_ANO_LNO_700-r2_004_3-1.xlsx'
+		
+#wb = xlrd2.open_workbook(workbook_location)
+#cyclestats=wb.sheet_by_index(0)
+#cc = cyclestats.ncols
+#dataset=np.array([[float(cyclestats.cell_value(row+1,col)) for col in range(cyclestats.ncols)]for row in range(cyclestats.nrows-2)]) #import data from xlsx spreadsheet to np array format
+#cycnum = dataset[1:cyclestats.nrows-1,0] #account for column titles
+#spec_caps = dataset[1:cyclestats.nrows-1,2]
 
 def show_plot():
     global dataSets, batteryData
@@ -61,7 +65,7 @@ def show_plot():
             dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3, batteryData[dataset].cyclenumbers,
                                                          batteryData[dataset].speCapData,
                                                          batteryData[dataset].voltageData)
-    plotfig = plt.figure(figsize=(4, 4), dpi=100)
+    plotfig = plt.figure(figsize=(5, 5), dpi=100)
     # ax = plotfig.gca()
     # plt.xticks(fontname = 'Arial', fontsize = 12)
     # plt.yticks(fontname = 'Arial', fontsize = 12)
@@ -76,36 +80,37 @@ def show_plot():
         # panel.set_yticks(fontname='Arial',fontsize=12)
 
     elif datasetName == "Mean Voltage":
-        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], 'o', c=[0, 0, 0])
-        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[2], '*', c=[0, 0, 0])
-        pane1.set_xlabel('Cycle Number', fontname='Arial', fontsize=10)
-        pane1.set_ylabel('Mean Voltage (V)', fontname='Arial', fontsize=10)
-    elif datasetName == "Voltage Curve":
-        cycle_numbers = set_cycle_numbers.get()  # retrieve user input providing cycle numbers
-        cycle_numbers = cycle_numbers.split(",")
-        symbols = ['o', '-', 'x', '*']
-        colors = [(255, 0, 0), (0, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255)]
-        symbol_counter = 0
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
+        pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
+        pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
+        pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
+    elif datasetName == "Voltage Curve": 
+        cycle_numbers = set_cycle_numbers.get() #retrieve user input providing cycle numbers
+        is_integers = True
+        for cycle in cycle_numbers:
+            cycle_numbers[cycle_numbers.index(cycle)] = int(cycle)
+        if type(cycle_numbers) == list:
+            is_list = True
+        for cycle in cycle_numbers:
+            if type(cycle) != int:
+                is_integers = False
+        if not (is_integers and is_list):
+            print("Please enter valid input. This is a list of comma separated integers.")
+
+		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
+		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
+		#Step 3: obtain dataset for each cycle specified and add to plot
+        symbols = ['o', '*', '.', '~']
+        colors = [(0,0,0),(255,0,0), (0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+        counter = 8
         for i in range(len(cycle_numbers)):
-            try:
-                cycle_numbers[i] = int(cycle_numbers[i])
-            except ValueError:  # maybe end function if invalid input or display something to user
-                return
-        cycle_dataSets = multiCurve(cycle_numbers,batteryData[0].speCapData,batteryData[0].voltageData)
-        for i in range(len(cycle_numbers)):
-            s = symbol_counter % 4
-            c = symbol_counter % 7
-            symbol_counter += 1
-        dataSets[0]['Voltage Curve'] = voltageCurve(cycle_numbers[0], batteryData[0].cyclenumbers,
-                                                    batteryData[0].speCapData,
-                                                    batteryData[0].voltageData)
-        # Step 1: validate input (a comma-separated list of integers is an acceptable input)
-        # Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
-        # Step 3: obtain dataset for each cycle specified and add to plot
-        # dataSets[0]['Voltage Curve'] = voltageCurve(1,batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], 'o', c=[0, 0, 0])
-        pane1.set_xlabel('Specific Capacity (mAh / g)', fontname='Arial', fontsize=12)
-        pane1.set_ylabel('Voltage (V)', fontname='Arial', fontsize=12)
+            s = counter % 4
+            c = counter % 7
+            dataSets['Voltage Curve'] = voltageCurve(i,batteryData.cyclenumbers,batteryData.speCapData,batteryData.voltageData)
+            pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],symbols[s],c=colors[c])
+            counter += 1
+        pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
+        pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
     elif datasetName == "dQ/dV curve":
         dataSets[0]['dQ/dV curve'] = dQdVcurve(1, batteryData[0].cyclenumbers, batteryData[0].speCapData,
                                                batteryData[0].voltageData)
@@ -113,12 +118,11 @@ def show_plot():
         pane1.set_xlabel('Voltage (V)', fontname='Arial', fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname='Arial', fontsize=10)
     else:
-        pass
-    canvas = FigureCanvasTkAgg(plotfig, master=main_window)
+       pass
+    canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.RIGHT)
-
-
+	
 def importDataFile():
     global batteryData
     global dataSets
@@ -167,7 +171,6 @@ def onSelectData(self):
         set_cycle_numbers['state'] = tk.DISABLED
         set_cycle_numbers_prompt['state'] = tk.DISABLED
 
-
 def onSelectEntryMode(self):
     if selectedEntryMode.get() == 'Enter Mass Manually:':
         mass_entry.delete(0, tk.END)
@@ -187,16 +190,16 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
     return cycle_dataSets
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
-screen_size = [main_window.winfo_screenwidth(), main_window.winfo_screenheight()]
-main_window.geometry("%ix%i" % (screen_size[0] / 2, screen_size[1] / 2))
+screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
+main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]*3/4))
 
-plotDataSetButton = tk.Button(main_window, command=show_plot, state=tk.DISABLED)
+plotDataSetButton = tk.Button(main_window,command = show_plot)
 plotDataSetButton['text'] = 'Plot Data'
-plotDataSetButton.place(relx=0.1, rely=0.1, anchor='center')
+plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
-addDataFileButton = tk.Button(main_window, command=importDataFile)
+addDataFileButton = tk.Button(main_window,command = importDataFile)
 addDataFileButton['text'] = 'Select Data File'
-addDataFileButton.place(relx=0.1, rely=0.2, anchor='center')
+addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
 selectedEntryMode = tk.StringVar(main_window)
 selectedEntryMode.set('Calculate (enter initial C-rate):')
@@ -209,17 +212,19 @@ mass_entry.place(relx=0.4, rely=0.4, anchor='center')
 theor_capac_entry = tk.Entry(state=tk.DISABLED)
 theor_capac_entry.place(relx=0.4, rely=0.46, anchor='center')
 
-selectedData = tk.StringVar(main_window)  # the selected string from the dropdown list will be stored in this variable
-selectedData.set('Specific Capacity')  # this is the default dataset
-dataSelect = tk.OptionMenu(main_window, selectedData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve',
-                           'dQ/dV curve', command=onSelectData)
-dataSelect.place(relx=0.1, rely=0.3, anchor='center')
-dataSelect.config(width=15)
+selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
+selectedData.set('Specific Capacity') #this is the default dataset
+dataSelect = tk.OptionMenu(main_window, selectedData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve',command = onSelectData)
+dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
+dataSelect.config(width = 15)
 
 set_cycle_numbers = tk.Entry(state=tk.DISABLED)
-set_cycle_numbers.place(relx=0.4, rely=0.3, anchor='center')
-set_cycle_numbers_prompt = tk.Label(text="Enter cycle number(s) below:", state=tk.DISABLED)
-set_cycle_numbers_prompt.place(relx=0.4, rely=0.2, anchor='center')
+set_cycle_numbers.place(relx=0.4,rely=0.3,anchor='center')
+set_cycle_numbers_prompt = tk.Label(text="Enter cycle number(s) below:",state=tk.DISABLED)
+set_cycle_numbers_prompt.place(relx=0.4,rely=0.2,anchor='center')
 
-# show_plot()
-main_window.mainloop()  # keep window open until closed by used
+
+
+#show_plot()
+main_window.mainloop() #keep window open until closed by used
+
