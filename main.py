@@ -74,10 +74,9 @@ def show_plot():
     if datasetName == "Specific Capacity":
         # apply default format settings for specific capacity plot
         pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], 'o', c=[0, 0, 0])
-        pane1.set_xlabel('Cycle Number', fontname='Arial', fontsize=10)
-        # pane1.set_xticks(fontname='Arial',fontsize=12)
+        pane1.set_xlabel('Cycle Number', fontname = 'Arial', fontsize=10)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname='Arial', fontsize=10)
-        # panel.set_yticks(fontname='Arial',fontsize=12)
+        pane1.set_title('Specific Capacity',fontname = 'Arial', fontsize = 12)
 
     elif datasetName == "Mean Voltage":
         pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
@@ -121,7 +120,7 @@ def show_plot():
        pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
-    canvas.get_tk_widget().pack(side=tk.RIGHT)
+    canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
 	
 def importDataFile():
     global batteryData
@@ -191,40 +190,56 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
-main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]*3/4))
+main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]))
 
-plotDataSetButton = tk.Button(main_window,command = show_plot)
+#control frame
+controlframe = tk.Frame(main_window,bg="#6665a4")
+controlframe.grid(column = 0, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
+
+import_control = tk.Label(controlframe,text = "File and Dataset Control", bg = 'Yellow')
+import_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
+
+plotDataSetButton = tk.Button(controlframe,command = show_plot,state=tk.DISABLED)
 plotDataSetButton['text'] = 'Plot Data'
-plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
+plotDataSetButton.grid(column = 0,row = 1,padx = 5, pady = 5)
+#plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
-addDataFileButton = tk.Button(main_window,command = importDataFile)
+addDataFileButton = tk.Button(controlframe,command = importDataFile)
 addDataFileButton['text'] = 'Select Data File'
-addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
+addDataFileButton.grid(column = 0,row = 2,padx = 5,pady = 5)
+#addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
 selectedEntryMode = tk.StringVar(main_window)
 selectedEntryMode.set('Calculate (enter initial C-rate):')
-mass_entry_mode = tk.OptionMenu(main_window, selectedEntryMode, 'Enter Mass Manually:', 'Calculate:',
+mass_entry_mode = tk.OptionMenu(controlframe, selectedEntryMode, 'Enter Mass Manually:', 'Calculate:',
                                 command=onSelectEntryMode)
-mass_entry_mode.place(relx=0.15, rely=0.4, anchor='center')
+mass_entry_mode.grid(column = 0,row = 4, padx = 5, pady = 5)
+#mass_entry_mode.place(relx=0.15, rely=0.4, anchor='center')
 mass_entry_mode.config(width=25)
-mass_entry = tk.Entry(state=tk.DISABLED)
-mass_entry.place(relx=0.4, rely=0.4, anchor='center')
-theor_capac_entry = tk.Entry(state=tk.DISABLED)
-theor_capac_entry.place(relx=0.4, rely=0.46, anchor='center')
+mass_entry = tk.Entry(controlframe)
+mass_entry.insert(0,"Active Mass (mg):")
+mass_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
+#theor_capac_entry = tk.Entry(controlframe)
+#theor_capac_entry.insert(0,"Capacity (mAh/g):")
+#theor_capac_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
 selectedData.set('Specific Capacity') #this is the default dataset
-dataSelect = tk.OptionMenu(main_window, selectedData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve',command = onSelectData)
-dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
+dataSelect = tk.OptionMenu(controlframe, selectedData, 'Specific Capacity', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve',command = onSelectData)
+dataSelect.grid(column = 0, row = 3, padx = 5, pady = 5)
+#dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
 dataSelect.config(width = 15)
 
-set_cycle_numbers = tk.Entry(state=tk.DISABLED)
-set_cycle_numbers.place(relx=0.4,rely=0.3,anchor='center')
-set_cycle_numbers_prompt = tk.Label(text="Enter cycle number(s) below:",state=tk.DISABLED)
-set_cycle_numbers_prompt.place(relx=0.4,rely=0.2,anchor='center')
+set_cycle_numbers = tk.Entry(controlframe)
+set_cycle_numbers.insert(0,"Cycle number(s):")
+set_cycle_numbers.grid(column = 1,row = 3)
 
+
+#formatframe
+formatFrame = tk.Frame(main_window, bg = "#FF0000")
+formatFrame.grid(column = 0, row = 1)
 
 
 #show_plot()
-main_window.mainloop() #keep window open until closed by used
+main_window.mainloop() #keep window open until closed by user
 
