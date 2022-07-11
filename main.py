@@ -65,7 +65,7 @@ def show_plot():
             dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3, batteryData[dataset].cyclenumbers,
                                                          batteryData[dataset].speCapData,
                                                          batteryData[dataset].voltageData)
-    plotfig = plt.figure(figsize=(5, 5), dpi=100)
+    plotfig = plt.figure(figsize=(5, 4), dpi=100)
     # ax = plotfig.gca()
     # plt.xticks(fontname = 'Arial', fontsize = 12)
     # plt.yticks(fontname = 'Arial', fontsize = 12)
@@ -119,7 +119,7 @@ def show_plot():
        pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
-    canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
+    canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 1, rowspan = 1)
 	
 def importDataFile():
     global batteryData
@@ -189,7 +189,7 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
-main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]))
+main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]*3/4))
 
 #control frame
 controlframe = tk.Frame(main_window,bg="#6665a4")
