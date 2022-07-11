@@ -47,6 +47,7 @@ def show_plot():
     if batteryData[0].sysFormat == 'Arbin':
         if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
             # print(np.nonzero(batteryData[0].currentData))
+            print(mass_entry.get())
             active_mass = batteryData[0].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(
                 mass_entry.get()) * 0.180)  # 180 mAh/g assumed initially, add input options for this later
         elif selectedEntryMode.get() == 'Enter Mass Manually:':
@@ -86,26 +87,26 @@ def show_plot():
     elif datasetName == "Voltage Curve": 
         cycle_numbers_string = set_cycle_numbers.get() #retrieve user input providing cycle numbers
         #convert string input to list of integers
+        cycle_numbers_strings = cycle_numbers_string.split(",")
+        print(cycle_numbers_strings)
         cycle_numbers = []
-        for cycle in cycle_numbers_string:
-            if cycle != ",":
-                try:
-                    cycle_numbers.append(int(cycle))
-                except:
-                    print("Please enter valid input. This is a list of comma separated integers.")
-
+        for cycle in cycle_numbers_strings:
+            try:
+                cycle_numbers.append(int(cycle))
+            except:
+                print("Please enter valid input. This is a list of comma separated integers.")
 
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
-        symbols = ['o', '*', '.', '~']
+        #symbols = ['o', '*', '.']
         colors = [(0,0,0),(0.5,0,0), (0,0.5,0), (0,0,0.5), (0.5,0.5,0), (0,0.5,0.5), (0.5,0,0.5)] #normalize color code values to 255
         counter = 8
         for i in range(len(cycle_numbers)):
-            s = counter % 4
+            #s = counter % 3
             c = counter % 7
             dataSets[0]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-            pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],symbols[s],c=colors[c]) #check if adding to data on plot or overwriting previous
+            pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'.',c=colors[c]) #check if adding to data on plot or overwriting previous
             counter += 1
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
@@ -126,6 +127,8 @@ def importDataFile():
     global dataSets
     global num_datasets
     infile_name = tk.filedialog.askopenfile().name
+    import_control = tk.Label(controlframe, text=infile_name[-20:], bg='Pink')
+    import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
     batteryData = file2dataset(infile_name)
     # num_datasets = 1
     if not isinstance(batteryData, list):
@@ -164,10 +167,10 @@ def importDataFile():
 def onSelectData(self):
     if selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve':
         set_cycle_numbers['state'] = tk.NORMAL
-        set_cycle_numbers_prompt['state'] = tk.NORMAL
+        #set_cycle_numbers_prompt['state'] = tk.NORMAL
     else:
         set_cycle_numbers['state'] = tk.DISABLED
-        set_cycle_numbers_prompt['state'] = tk.DISABLED
+        #set_cycle_numbers_prompt['state'] = tk.DISABLED
 
 def onSelectEntryMode(self):
     if selectedEntryMode.get() == 'Enter Mass Manually:':
