@@ -45,7 +45,7 @@ global dataSets
 def show_plot():
     global dataSets, batteryData
     if batteryData[0].sysFormat == 'Arbin':
-        if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
+        if selectedEntryMode.get() == 'Calculate:':
             # print(np.nonzero(batteryData[0].currentData))
             print(mass_entry.get())
             active_mass = batteryData[0].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(
@@ -66,7 +66,7 @@ def show_plot():
             dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3, batteryData[dataset].cyclenumbers,
                                                          batteryData[dataset].speCapData,
                                                          batteryData[dataset].voltageData)
-    plotfig = plt.figure(figsize=(5, 5), dpi=100)
+    plotfig = plt.figure(figsize=(6, 4), dpi=100)
     # ax = plotfig.gca()
     # plt.xticks(fontname = 'Arial', fontsize = 12)
     # plt.yticks(fontname = 'Arial', fontsize = 12)
@@ -74,7 +74,7 @@ def show_plot():
     datasetName = selectedData.get()
     if datasetName == "Specific Capacity":
         # apply default format settings for specific capacity plot
-        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], 'o', c=[0, 0, 0])
+        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=[0, 0, 0])
         pane1.set_xlabel('Cycle Number', fontname = 'Arial', fontsize=10)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname='Arial', fontsize=10)
         pane1.set_title('Specific Capacity',fontname = 'Arial', fontsize = 12)
@@ -84,15 +84,15 @@ def show_plot():
         pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
         pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
         pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
+
     elif datasetName == "Voltage Curve": 
         cycle_numbers_string = set_cycle_numbers.get() #retrieve user input providing cycle numbers
         #convert string input to list of integers
-        cycle_numbers_strings = cycle_numbers_string.split(",")
-        print(cycle_numbers_strings)
+        cycle_numbers_strings = cycle_numbers_string.split(",") #splits input into cycle numbers
         cycle_numbers = []
         for cycle in cycle_numbers_strings:
             try:
-                cycle_numbers.append(int(cycle))
+                cycle_numbers.append(int(cycle)) #checks if cycle numbers are valid integers
             except:
                 print("Please enter valid input. This is a list of comma separated integers.")
 
@@ -101,21 +101,46 @@ def show_plot():
 		#Step 3: obtain dataset for each cycle specified and add to plot
         #symbols = ['o', '*', '.']
         colors = [(0,0,0),(0.5,0,0), (0,0.5,0), (0,0,0.5), (0.5,0.5,0), (0,0.5,0.5), (0.5,0,0.5)] #normalize color code values to 255
-        counter = 8
+        counter = 7
         for i in range(len(cycle_numbers)):
             #s = counter % 3
-            c = counter % 7
+            c = counter % 7 #allows for changing colors between graphs
+            cycle_label = 'Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
             dataSets[0]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-            pane1.plot(dataSets[0].get(datasetName)[0],dataSets[0].get(datasetName)[1],'.',c=colors[c]) #check if adding to data on plot or overwriting previous
+            pane1.plot(dataSets[0].get(datasetName)[0].squeeze(),dataSets[0].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
             counter += 1
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
+        pane1.legend()
+
     elif datasetName == "dQ/dV curve":
-        dataSets[0]['dQ/dV curve'] = dQdVcurve(1, batteryData[0].cyclenumbers, batteryData[0].speCapData,
+        cycle_numbers_string = set_cycle_numbers.get()  # retrieve user input providing cycle numbers
+        # convert string input to list of integers
+        cycle_numbers_strings = cycle_numbers_string.split(",")
+        cycle_numbers = []
+        for cycle in cycle_numbers_strings:
+            try:
+                cycle_numbers.append(int(cycle))
+            except:
+                print("Please enter valid input. This is a list of comma separated integers.")
+            # Step 1: validate input (a comma-separated list of integers is an acceptable input)
+            # Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
+            # Step 3: obtain dataset for each cycle specified and add to plot
+        # symbols = ['o', '*', '.']
+        colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
+                  (0.5, 0, 0.5)]  # normalize color code values to 255
+        counter = 8
+        for i in range(len(cycle_numbers)):
+            # s = counter % 3
+            c = counter % 7
+            cycle_label = 'Cycle ' + str(cycle_numbers[i])
+            dataSets[0]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[0].cyclenumbers, batteryData[0].speCapData,
                                                batteryData[0].voltageData)
-        pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], 'o', c=[0, 0, 0])
+            pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=colors[c], label=cycle_label)
+            counter += 1
         pane1.set_xlabel('Voltage (V)', fontname='Arial', fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname='Arial', fontsize=10)
+        pane1.legend()
     else:
        pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
@@ -126,8 +151,10 @@ def importDataFile():
     global batteryData
     global dataSets
     global num_datasets
+    global max_cycle
+    global data_selected
     infile_name = tk.filedialog.askopenfile().name
-    import_control = tk.Label(controlframe, text=infile_name[-20:], bg='Pink')
+    import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
     import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
     batteryData = file2dataset(infile_name)
     # num_datasets = 1
@@ -142,6 +169,7 @@ def importDataFile():
                                                  batteryData.voltageData)
         dataSets['dQ/dV curve'] = dQdVcurve(3, batteryData.cyclenumbers, batteryData.speCapData,
                                             batteryData.voltageData)
+        max_cycle = max(BatteryData.cyclenumbers)
     else:  # list type dataset from arbin
         Format = batteryData[0].sysFormat
         num_datasets = len(batteryData)
@@ -157,16 +185,22 @@ def importDataFile():
             # dataset].speCapData,batteryData[dataset].voltageData) dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,
             # batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
         mass_entry['state'] = tk.NORMAL
+        max_cycle = max(batteryData[dataset].cyclenumbers)
 
     print('Detected %s file format' % Format)
     print('%d dataset(s) imported' % num_datasets)
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
+    data_selected = True
+
 
 
 def onSelectData(self):
-    if selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve':
+    if (selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve') and data_selected == True:
         set_cycle_numbers['state'] = tk.NORMAL
+        message = "(Max Cycle: " + str(int(max_cycle)) + ")"
+        set_cycle_numbers.delete(0, tk.END)
+        set_cycle_numbers.insert(0, message)
         #set_cycle_numbers_prompt['state'] = tk.NORMAL
     else:
         set_cycle_numbers['state'] = tk.DISABLED
@@ -179,7 +213,7 @@ def onSelectEntryMode(self):
     elif selectedEntryMode.get() == 'Calculate:':
         # theor_capac_entry['state'] = tk.NORMAL
         mass_entry.delete(0, tk.END)
-        mass_entry.insert(0, 'Enter initial C rate')
+        mass_entry.insert(0, '0.1')
         # make prompts & extra textbox active
 
 def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
@@ -192,13 +226,13 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
-main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]))
+main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]*3/4))
 
 #control frame
-controlframe = tk.Frame(main_window,bg="#6665a4")
+controlframe = tk.Frame(main_window,bg="#0b60ad")
 controlframe.grid(column = 0, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
 
-import_control = tk.Label(controlframe,text = "File and Dataset Control", bg = 'Yellow')
+import_control = tk.Label(controlframe,text = "File and Dataset Control", bg = "#9fc5e8")
 import_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 plotDataSetButton = tk.Button(controlframe,command = show_plot,state=tk.DISABLED)
@@ -236,10 +270,12 @@ set_cycle_numbers = tk.Entry(controlframe)
 set_cycle_numbers.insert(0,"Cycle number(s):")
 set_cycle_numbers.grid(column = 1,row = 3)
 
-
 #formatframe
-formatFrame = tk.Frame(main_window, bg = "#FF0000")
-formatFrame.grid(column = 0, row = 1)
+formatFrame = tk.Frame(main_window, bg = "#674ea7")
+formatFrame.grid(column = 0, row = 1, padx = 10, pady = 10, ipadx = 10, ipady = 10)
+
+graph_control = tk.Label(formatFrame,text = "Graph Control", bg = "#b4a7d6")
+graph_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 
 #show_plot()
