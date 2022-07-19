@@ -70,6 +70,7 @@ def show_plot():
     # ax = plotfig.gca()
     # plt.xticks(fontname = 'Arial', fontsize = 12)
     # plt.yticks(fontname = 'Arial', fontsize = 12)
+    global pane1
     pane1 = plotfig.add_subplot(1, 1, 1)
     datasetName = selectedData.get()
     if datasetName == "Specific Capacity":
@@ -123,8 +124,8 @@ def show_plot():
             counter += 1
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
-        #pane1.legend()
         displayLegend()
+
 
     elif datasetName == "dQ/dV curve":
         cycle_numbers_string = set_cycle_numbers.get()  # retrieve user input providing cycle numbers
@@ -153,8 +154,8 @@ def show_plot():
             counter += 1
         pane1.set_xlabel('Voltage (V)', fontname='Arial', fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname='Arial', fontsize=10)
-        #pane1.legend()
         displayLegend()
+
 
     else:
        pass
@@ -206,6 +207,7 @@ def importDataFile():
     print('%d dataset(s) imported' % num_datasets)
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
+    legend_checkbox['state'] = tk.NORMAL
     data_selected = True
 
 
@@ -240,7 +242,7 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
     return cycle_dataSets
 
 def displayLegend():
-    if legend_on.get() == 1:
+    if legend_on.get():
         print("Legend on")
         pane1.legend()
     else:
@@ -300,12 +302,14 @@ formatFrame.grid(column = 0, row = 1, padx = 10, pady = 10, ipadx = 10, ipady = 
 graph_control = tk.Label(formatFrame,text = "Graph Control", bg = "#b4a7d6")
 graph_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
+legend_on = tk.BooleanVar()
+legend_checkbox = tk.Checkbutton(formatFrame, text='Legend', variable=legend_on, onvalue=True, offvalue=False, command=displayLegend, bg="#e9e0ff",state=tk.DISABLED)
+legend_checkbox.grid(column=0, row=1, columnspan=2, padx=5, pady=5)
+
 #legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
 #legend_control.grid(column = 1,row = 1,padx = 5, pady = 5)
 
-legend_on = tk.IntVar()
-legend_checkbox = tk.Checkbutton(formatFrame, text='Legend',variable=legend_on, onvalue=1, offvalue=2, command=displayLegend, bg= "#e9e0ff")
-legend_checkbox.grid(column = 0, row = 1, columnspan = 2, padx = 5, pady = 5)
+
 
 #show_plot()
 main_window.mainloop() #keep window open until closed by user
