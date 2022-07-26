@@ -43,16 +43,25 @@ global dataSets
 #spec_caps = dataset[1:cyclestats.nrows-1,2]
 
 def show_plot():
-    global dataSets, batteryData
+    global dataSets, batteryData, active_mass, nominal_capacity
+    try:
+        nominal_capacity = int(set_nominal_capacity.get())
+    except:
+        nominal_capacity = 180
+        set_nominal_capacity.delete(0, tk.END)
+        set_nominal_capacity.insert(0, "180")
+
     if batteryData[0].sysFormat == 'Arbin':
         if selectedEntryMode.get() == 'Calculate:':
             # print(np.nonzero(batteryData[0].currentData))
-            print(mass_entry.get())
-            active_mass = batteryData[0].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(
-                mass_entry.get()) * 0.180)  # 180 mAh/g assumed initially, add input options for this later
+            for dataset in range(num_datasets):
+                active_mass = batteryData[dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000)
+                batteryData[dataset].recalculate(active_mass)
+              # 180 mAh/g assumed initially, add input options for this later
         elif selectedEntryMode.get() == 'Enter Mass Manually:':
-            active_mass = float(mass_entry.get()) / 1000  # assume entry in mg
-        batteryData[0].recalculate(active_mass)
+            for dataset in range(num_datasets):
+                active_mass = float(mass_entry.get()) / 1000  # assume entry in mg
+                batteryData[dataset].recalculate(active_mass)
         for dataset in range(num_datasets):
             dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,
                                                                       batteryData[dataset].currentData,
@@ -67,36 +76,60 @@ def show_plot():
                                                          batteryData[dataset].speCapData,
                                                          batteryData[dataset].voltageData)
     plotfig = plt.figure(figsize=(6, 4), dpi=100)
+    x_axis = set_domain.get().split(',')
+    y_axis = set_range.get().split(',')
+
+
     # ax = plotfig.gca()
     # plt.xticks(fontname = 'Arial', fontsize = 12)
-    # plt.yticks(fontname = 'Arial', fontsize = 12)
+    # yticks(fontname = 'Arial', fontsize = 12)
     global pane1
     pane1 = plotfig.add_subplot(1, 1, 1)
     datasetName = selectedData.get()
     if datasetName == "Specific Capacity":
+        colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
+                  (0.5, 0, 0.5)]  # normalize color code values to 255
+
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
                 #print(dataSets[dataset].get(datasetName)[0])
                 #print(dataSets[dataset].get(datasetName)[1])
-                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0])
+                dataset_label = 'Cell ' + str(int(dataset+1))
+                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[dataset], label=dataset_label)
+                displayLegend()
+
+
         # apply default format settings for specific capacity plot
         else:
             pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=[0, 0, 0])
         pane1.set_xlabel('Cycle Number', fontname = 'Arial', fontsize=10)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname='Arial', fontsize=10)
         pane1.set_title('Specific Capacity',fontname = 'Arial', fontsize = 12)
+        set_axes(x_axis, y_axis)
 
     elif datasetName == "Mean Voltage":
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
                 print(dataSets[dataset].get(datasetName)[0])
                 print(dataSets[dataset].get(datasetName)[1])
-                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0])
+                dataset_label = 'Cell ' + str(dataset)
+                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0], label = dataset_label)
+                displayLegend()
+        else:
+            dataset = 0
+            print(dataSets[dataset].get(datasetName)[0])
+            print(dataSets[dataset].get(datasetName)[1])
+            dataset_label = 'Cell ' + str(dataset)
+            pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0],
+                       label=dataset_label)
+            displayLegend()
 
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
         pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
         pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
+        pane1.set_title('Mean Voltage', fontname='Arial', fontsize=12)
+        set_axes(x_axis, y_axis)
 
     elif datasetName == "Voltage Curve": 
         cycle_numbers_string = set_cycle_numbers.get() #retrieve user input providing cycle numbers
@@ -115,16 +148,37 @@ def show_plot():
         #symbols = ['o', '*', '.']
         colors = [(0,0,0),(0.5,0,0), (0,0.5,0), (0,0,0.5), (0.5,0.5,0), (0,0.5,0.5), (0.5,0,0.5)] #normalize color code values to 255
         counter = 7
-        for i in range(len(cycle_numbers)):
+
+        if batteryData[0].sysFormat == 'Arbin':
+            for dataset in range(num_datasets):
             #s = counter % 3
-            c = counter % 7 #allows for changing colors between graphs
-            cycle_label = 'Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
-            dataSets[0]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[0].cyclenumbers,batteryData[0].speCapData,batteryData[0].voltageData)
-            pane1.plot(dataSets[0].get(datasetName)[0].squeeze(),dataSets[0].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
-            counter += 1
+                for i in range(len(cycle_numbers)):
+                    c = counter % 7 #allows for changing colors between graphs
+                    cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
+                    dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
+                    pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),dataSets[dataset].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
+                    counter += 1
+                    displayLegend()
+        else:
+            dataset = 0
+            for i in range(len(cycle_numbers)):
+                c = counter % 7  # allows for changing colors between graphs
+                cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(
+                    cycle_numbers[i])  # generates cycle label as neccessary
+                dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
+                                                                  batteryData[dataset].speCapData,
+                                                                  batteryData[dataset].voltageData)
+                pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),
+                           dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c],
+                           label=cycle_label)  # check if adding to data on plot or overwriting previous
+                counter += 1
+                displayLegend()
+
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
         pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
-        displayLegend()
+        pane1.set_title('Voltage', fontname='Arial', fontsize=12)
+        set_axes(x_axis, y_axis)
+
 
 
     elif datasetName == "dQ/dV curve":
@@ -144,21 +198,37 @@ def show_plot():
         colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
                   (0.5, 0, 0.5)]  # normalize color code values to 255
         counter = 8
-        for i in range(len(cycle_numbers)):
-            # s = counter % 3
-            c = counter % 7
-            cycle_label = 'Cycle ' + str(cycle_numbers[i])
-            dataSets[0]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[0].cyclenumbers, batteryData[0].speCapData,
-                                               batteryData[0].voltageData)
-            pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=colors[c], label=cycle_label)
-            counter += 1
+        if batteryData[0].sysFormat == 'Arbin':
+            for dataset in range(num_datasets):
+            #s = counter % 3
+                for i in range(len(cycle_numbers)):
+                    # s = counter % 3
+                    c = counter % 7
+                    cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i])
+                    dataSets[dataset]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[dataset].cyclenumbers, batteryData[dataset].speCapData,
+                                                       batteryData[dataset].voltageData)
+                    pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[c], label=cycle_label)
+                    counter += 1
+                    displayLegend()
+        else:
+            dataset = 0
+            for i in range(len(cycle_numbers)):
+                # s = counter % 3
+                c = counter % 7
+                cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(cycle_numbers[i])
+                dataSets[dataset]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
+                                                             batteryData[dataset].speCapData,
+                                                             batteryData[dataset].voltageData)
+                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[c],
+                           label=cycle_label)
+                counter += 1
+                displayLegend()
         pane1.set_xlabel('Voltage (V)', fontname='Arial', fontsize=12)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname='Arial', fontsize=10)
-        displayLegend()
+        pane1.set_title('dQ/dV', fontname='Arial', fontsize=12)
+        set_axes(x_axis, y_axis)
 
 
-    else:
-       pass
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
@@ -169,6 +239,8 @@ def importDataFile():
     global num_datasets
     global max_cycle
     global data_selected
+    global max_cycle_list
+    max_cycle_list = []
     infile_name = tk.filedialog.askopenfile().name
     import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
     import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
@@ -186,6 +258,8 @@ def importDataFile():
         dataSets['dQ/dV curve'] = dQdVcurve(3, batteryData.cyclenumbers, batteryData.speCapData,
                                             batteryData.voltageData)
         max_cycle = max(BatteryData.cyclenumbers)
+
+
     else:  # list type dataset from arbin
         Format = batteryData[0].sysFormat
         num_datasets = len(batteryData)
@@ -200,8 +274,16 @@ def importDataFile():
             # dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[
             # dataset].speCapData,batteryData[dataset].voltageData) dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,
             # batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
+            max_cycle = max(batteryData[dataset].cyclenumbers)
+            max_cycle_list.append(int(max_cycle))
         mass_entry['state'] = tk.NORMAL
-        max_cycle = max(batteryData[dataset].cyclenumbers)
+    if batteryData[0].sysFormat == 'Arbin':
+        set_nominal_capacity['state'] = tk.NORMAL
+        set_nominal_capacity.delete(0, tk.END)
+        set_nominal_capacity.insert(0, "180")
+    else:
+        set_nominal_capacity['state'] = tk.DISABLED
+
 
     print('Detected %s file format' % Format)
     print('%d dataset(s) imported' % num_datasets)
@@ -215,7 +297,7 @@ def importDataFile():
 def onSelectData(self):
     if (selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve') and data_selected == True:
         set_cycle_numbers['state'] = tk.NORMAL
-        message = "(Max Cycle: " + str(int(max_cycle)) + ")"
+        message = "Max Cycles: "  + str(max_cycle_list)
         set_cycle_numbers.delete(0, tk.END)
         set_cycle_numbers.insert(0, message)
         #set_cycle_numbers_prompt['state'] = tk.NORMAL
@@ -243,10 +325,23 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 
 def displayLegend():
     if legend_on.get():
-        print("Legend on")
         pane1.legend()
-    else:
-        print("Legend off")
+
+def set_axes(x_axis, y_axis):
+    try:
+        for i in range(len(x_axis)):
+            x_axis[i] = int(x_axis[i])
+        for i in range(len(y_axis)):
+            y_axis[i] = int(y_axis[i])
+        print(x_axis)
+        print(y_axis)
+        plt.xlim(x_axis)
+        plt.ylim(y_axis)
+    except:
+        pass
+
+
+
 
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
@@ -304,7 +399,25 @@ graph_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 legend_on = tk.BooleanVar()
 legend_checkbox = tk.Checkbutton(formatFrame, text='Legend', variable=legend_on, onvalue=True, offvalue=False, command=displayLegend, bg="#e9e0ff",state=tk.DISABLED)
-legend_checkbox.grid(column=0, row=1, columnspan=2, padx=5, pady=5)
+legend_checkbox.grid(column=0, row=4, columnspan=2, padx=5, pady=5)
+
+domain_control = tk.Label(formatFrame,text = "Domain ", bg = "#e9e0ff", width = 15)
+domain_control.grid(column = 0, row = 2, padx = 5, pady = 5)
+set_domain = tk.Entry(formatFrame)
+set_domain.insert(0,"Min, Max")
+set_domain.grid(column = 1,row = 2)
+
+range_control = tk.Label(formatFrame,text = " Range ", bg = "#e9e0ff", width = 10)
+range_control.grid(column = 0, row = 3, padx = 5, pady = 5)
+set_range = tk.Entry(formatFrame)
+set_range.insert(0,"Min, Max")
+set_range.grid(column = 1,row = 3)
+
+nominal_capacity_control = tk.Label(formatFrame,text = "Nominal Capacity (mAh/g)", bg = "#e9e0ff")
+nominal_capacity_control.grid(column = 0, row = 1, padx = 5, pady = 5)
+set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
+set_nominal_capacity.insert(0,"180")
+set_nominal_capacity.grid(column = 1,row = 1)
 
 #legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
 #legend_control.grid(column = 1,row = 1,padx = 5, pady = 5)
