@@ -9,6 +9,9 @@ from dataProcesses import *
 import batteryDataSet
 global batteryData
 global dataSets
+global max_cycle
+global max_cycle_list
+
 
 
 
@@ -237,10 +240,7 @@ def importDataFile():
     global batteryData
     global dataSets
     global num_datasets
-    global max_cycle
     global data_selected
-    global max_cycle_list
-    max_cycle_list = []
     infile_name = tk.filedialog.askopenfile().name
     import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
     import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
@@ -257,7 +257,7 @@ def importDataFile():
                                                  batteryData.voltageData)
         dataSets['dQ/dV curve'] = dQdVcurve(3, batteryData.cyclenumbers, batteryData.speCapData,
                                             batteryData.voltageData)
-        max_cycle = max(BatteryData.cyclenumbers)
+        #max_cycle = max(BatteryData.cyclenumbers)
 
 
     else:  # list type dataset from arbin
@@ -274,14 +274,16 @@ def importDataFile():
             # dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[
             # dataset].speCapData,batteryData[dataset].voltageData) dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,
             # batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-            max_cycle = max(batteryData[dataset].cyclenumbers)
-            max_cycle_list.append(int(max_cycle))
+            #max_cycle = max(batteryData[dataset].cyclenumbers)
+            #max_cycle_list.append(int(max_cycle))
         mass_entry['state'] = tk.NORMAL
     if batteryData[0].sysFormat == 'Arbin':
         set_nominal_capacity['state'] = tk.NORMAL
         set_nominal_capacity.delete(0, tk.END)
         set_nominal_capacity.insert(0, "180")
     else:
+        set_nominal_capacity.delete(0, tk.END)
+        set_nominal_capacity.insert(0, "180")
         set_nominal_capacity['state'] = tk.DISABLED
 
 
@@ -297,7 +299,8 @@ def importDataFile():
 def onSelectData(self):
     if (selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve') and data_selected == True:
         set_cycle_numbers['state'] = tk.NORMAL
-        message = "Max Cycles: "  + str(max_cycle_list)
+        findMaxCycle()
+        message = "Max Cycles: "  + str(findMaxCycle())
         set_cycle_numbers.delete(0, tk.END)
         set_cycle_numbers.insert(0, message)
         #set_cycle_numbers_prompt['state'] = tk.NORMAL
@@ -327,16 +330,34 @@ def displayLegend():
     if legend_on.get():
         pane1.legend()
 
+def findMaxCycle():
+    max_cycle_list = []
+    if batteryData[0].sysFormat == 'Arbin':
+        for dataset in range(num_datasets):
+            max_cycle = max(batteryData[dataset].cyclenumbers)
+            max_cycle_list.append(int(max_cycle))
+    else:
+        max_cycle = max(BatteryData.cyclenumbers)
+        max_cycle_list.append(int(max_cycle))
+    return max_cycle_list
+
+
 def set_axes(x_axis, y_axis):
     try:
         for i in range(len(x_axis)):
-            x_axis[i] = int(x_axis[i])
+            x_axis[i] = float(x_axis[i])
+        plt.xlim(x_axis)
+    except:
+        pass
+    try:
         for i in range(len(y_axis)):
-            y_axis[i] = int(y_axis[i])
+            y_axis[i] = float(y_axis[i])
+        plt.ylim(y_axis)
+    except:
+        pass
+    try:
         print(x_axis)
         print(y_axis)
-        plt.xlim(x_axis)
-        plt.ylim(y_axis)
     except:
         pass
 
@@ -416,7 +437,7 @@ set_range.grid(column = 1,row = 3)
 nominal_capacity_control = tk.Label(formatFrame,text = "Nominal Capacity (mAh/g)", bg = "#e9e0ff")
 nominal_capacity_control.grid(column = 0, row = 1, padx = 5, pady = 5)
 set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
-set_nominal_capacity.insert(0,"180")
+#set_nominal_capacity.insert(0,"180")
 set_nominal_capacity.grid(column = 1,row = 1)
 
 #legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
