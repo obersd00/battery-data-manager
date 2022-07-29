@@ -11,6 +11,7 @@ global batteryData
 global dataSets
 global max_cycle
 global max_cycle_list
+global plotfig
 
 
 
@@ -82,10 +83,6 @@ def show_plot():
     x_axis = set_domain.get().split(',')
     y_axis = set_range.get().split(',')
 
-
-    # ax = plotfig.gca()
-    # plt.xticks(fontname = 'Arial', fontsize = 12)
-    # yticks(fontname = 'Arial', fontsize = 12)
     global pane1
     pane1 = plotfig.add_subplot(1, 1, 1)
     datasetName = selectedData.get()
@@ -235,6 +232,8 @@ def show_plot():
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
+
+    save_figure_button['state'] = tk.NORMAL
 	
 def importDataFile():
     global batteryData
@@ -291,7 +290,6 @@ def importDataFile():
     print('%d dataset(s) imported' % num_datasets)
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
-    legend_checkbox['state'] = tk.NORMAL
     data_selected = True
 
 
@@ -362,7 +360,10 @@ def set_axes(x_axis, y_axis):
         pass
 
 
-
+def saveFigure():
+    filename = figure_filename_entry.get()
+    plt.savefig(filename + '.png')
+    return
 
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
@@ -396,9 +397,14 @@ mass_entry_mode.config(width=25)
 mass_entry = tk.Entry(controlframe)
 mass_entry.insert(0,"Active Mass (mg):")
 mass_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
-#theor_capac_entry = tk.Entry(controlframe)
-#theor_capac_entry.insert(0,"Capacity (mAh/g):")
-#theor_capac_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
+
+save_figure_button = tk.Button(controlframe,command = saveFigure, state = tk.DISABLED)
+save_figure_button['text'] = 'Save Figure'
+save_figure_button.grid(column = 0, row = 5, padx = 5, pady = 5)
+
+figure_filename_entry = tk.Entry(controlframe)
+figure_filename_entry.insert(0,'Figure Filename:')
+figure_filename_entry.grid(column = 1,row = 5, padx = 5, pady = 5)
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
 selectedData.set('Specific Capacity') #this is the default dataset
@@ -410,6 +416,7 @@ dataSelect.config(width = 15)
 set_cycle_numbers = tk.Entry(controlframe)
 set_cycle_numbers.insert(0,"Cycle number(s):")
 set_cycle_numbers.grid(column = 1,row = 3)
+
 
 #formatframe
 formatFrame = tk.Frame(main_window, bg = "#674ea7")
