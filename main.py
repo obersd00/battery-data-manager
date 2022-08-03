@@ -6,12 +6,16 @@ import numpy as np
 import tkinter as tk
 from file2dataset import file2dataset
 from dataProcesses import *
+import matplotlib as mpl
 import batteryDataSet
 global batteryData
 global dataSets
 global max_cycle
 global max_cycle_list
 global plotfig
+global fontEntryMode
+
+
 
 
 
@@ -54,9 +58,10 @@ def show_plot():
         nominal_capacity = 180
         set_nominal_capacity.delete(0, tk.END)
         set_nominal_capacity.insert(0, "180")
-
+    font = chooseFont()
+    titleSize, axesSize, legendSize = fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale)
     if batteryData[0].sysFormat == 'Arbin':
-        if selectedEntryMode.get() == 'Calculate:':
+        if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
             # print(np.nonzero(batteryData[0].currentData))
             for dataset in range(num_datasets):
                 active_mass = batteryData[dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000)
@@ -79,16 +84,17 @@ def show_plot():
             dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3, batteryData[dataset].cyclenumbers,
                                                          batteryData[dataset].speCapData,
                                                          batteryData[dataset].voltageData)
-    plotfig = plt.figure(figsize=(6, 4), dpi=100)
+    plotfig = plt.figure(figsize=(7, 4), dpi=100)
     x_axis = set_domain.get().split(',')
     y_axis = set_range.get().split(',')
 
     global pane1
     pane1 = plotfig.add_subplot(1, 1, 1)
     datasetName = selectedData.get()
+    colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
+              (0.5, 0, 0.5)]
     if datasetName == "Specific Capacity":
-        colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
-                  (0.5, 0, 0.5)]  # normalize color code values to 255
+         # normalize color code values to 255
 
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
@@ -101,10 +107,11 @@ def show_plot():
 
         # apply default format settings for specific capacity plot
         else:
-            pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=[0, 0, 0])
-        pane1.set_xlabel('Cycle Number', fontname = 'Arial', fontsize=10)
-        pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname='Arial', fontsize=10)
-        pane1.set_title('Specific Capacity',fontname = 'Arial', fontsize = 12)
+            pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=[0, 0, 0], label = 'Cell 1')
+            displayLegend()
+        pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
+        pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname=font, fontsize=axesSize)
+        pane1.set_title('Specific Capacity',fontname = font, fontsize = titleSize)
         set_axes(x_axis, y_axis)
 
     elif datasetName == "Mean Voltage":
@@ -126,12 +133,13 @@ def show_plot():
 
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
-        pane1.set_xlabel('Cycle Number',fontname='Arial',fontsize=10)
-        pane1.set_ylabel('Mean Voltage (V)',fontname='Arial',fontsize=10)
-        pane1.set_title('Mean Voltage', fontname='Arial', fontsize=12)
+        pane1.set_xlabel('Cycle Number',fontname=font,fontsize=axesSize)
+        pane1.set_ylabel('Mean Voltage (V)',fontname=font,fontsize=axesSize)
+        pane1.set_title('Mean Voltage', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
 
-    elif datasetName == "Voltage Curve": 
+    elif datasetName == "Voltage Curve":
+        counter = 7
         cycle_numbers_string = set_cycle_numbers.get() #retrieve user input providing cycle numbers
         #convert string input to list of integers
         cycle_numbers_strings = cycle_numbers_string.split(",") #splits input into cycle numbers
@@ -146,37 +154,39 @@ def show_plot():
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
         #symbols = ['o', '*', '.']
-        colors = [(0,0,0),(0.5,0,0), (0,0.5,0), (0,0,0.5), (0.5,0.5,0), (0,0.5,0.5), (0.5,0,0.5)] #normalize color code values to 255
-        counter = 7
-
+        #colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
+                  #(0.5, 0, 0.5)]  # normalize color code values to 255
+        #counter = 7
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
             #s = counter % 3
-                for i in range(len(cycle_numbers)):
-                    c = counter % 7 #allows for changing colors between graphs
-                    cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
-                    dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-                    pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),dataSets[dataset].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
-                    counter += 1
-                    displayLegend()
+                #for i in range(len(cycle_numbers)):
+                    #c = counter % 7 #allows for changing colors between graphs
+                    #cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
+                    #dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
+                    #pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),dataSets[dataset].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
+                    #counter += 1
+                    #displayLegend()
+                counter = plotVoltCurves(cycle_numbers, dataset, dataSets,colors,datasetName,counter)
         else:
             dataset = 0
-            for i in range(len(cycle_numbers)):
-                c = counter % 7  # allows for changing colors between graphs
-                cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(
-                    cycle_numbers[i])  # generates cycle label as neccessary
-                dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
-                                                                  batteryData[dataset].speCapData,
-                                                                  batteryData[dataset].voltageData)
-                pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),
-                           dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c],
-                           label=cycle_label)  # check if adding to data on plot or overwriting previous
-                counter += 1
-                displayLegend()
+            #for i in range(len(cycle_numbers)):
+             #   c = counter % 7  # allows for changing colors between graphs
+              #  cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(
+               #     cycle_numbers[i])  # generates cycle label as neccessary
+                #dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
+                 #                                                 batteryData[dataset].speCapData,
+                  #                                                batteryData[dataset].voltageData)
+                #pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),
+                 #          dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c],
+                  #         label=cycle_label)  # check if adding to data on plot or overwriting previous
+                #counter += 1
+                #displayLegend()
+            counter = plotVoltCurves(cycle_numbers, dataset, dataSets, colors, datasetName, counter)
 
-        pane1.set_xlabel('Specific Capacity (mAh / g)',fontname='Arial',fontsize=12)
-        pane1.set_ylabel('Voltage (V)',fontname='Arial',fontsize=12)
-        pane1.set_title('Voltage', fontname='Arial', fontsize=12)
+        pane1.set_xlabel('Specific Capacity (mAh / g)',fontname=font,fontsize=axesSize)
+        pane1.set_ylabel('Voltage (V)',fontname=font,fontsize=axesSize)
+        pane1.set_title('Voltage', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
 
 
@@ -195,9 +205,9 @@ def show_plot():
             # Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
             # Step 3: obtain dataset for each cycle specified and add to plot
         # symbols = ['o', '*', '.']
-        colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
-                  (0.5, 0, 0.5)]  # normalize color code values to 255
-        counter = 8
+        #colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
+                  #(0.5, 0, 0.5)]  # normalize color code values to 255
+        #counter = 8
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
             #s = counter % 3
@@ -223,17 +233,19 @@ def show_plot():
                            label=cycle_label)
                 counter += 1
                 displayLegend()
-        pane1.set_xlabel('Voltage (V)', fontname='Arial', fontsize=12)
-        pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname='Arial', fontsize=10)
-        pane1.set_title('dQ/dV', fontname='Arial', fontsize=12)
+        pane1.set_xlabel('Voltage (V)', fontname=font, fontsize=axesSize)
+        pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname=font, fontsize=axesSize)
+        pane1.set_title('dQ/dV', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
 
 
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
+    selectFolderButton['state'] = tk.NORMAL
 
-    save_figure_button['state'] = tk.NORMAL
+
+
 	
 def importDataFile():
     global batteryData
@@ -310,7 +322,7 @@ def onSelectEntryMode(self):
     if selectedEntryMode.get() == 'Enter Mass Manually:':
         mass_entry.delete(0, tk.END)
         mass_entry.insert(0, 'Enter mass (mg)')
-    elif selectedEntryMode.get() == 'Calculate:':
+    elif selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
         # theor_capac_entry['state'] = tk.NORMAL
         mass_entry.delete(0, tk.END)
         mass_entry.insert(0, '0.1')
@@ -326,7 +338,8 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 
 def displayLegend():
     if legend_on.get():
-        pane1.legend()
+        pane1.legend(prop={'size': legendSize})
+
 
 def findMaxCycle():
     max_cycle_list = []
@@ -335,7 +348,7 @@ def findMaxCycle():
             max_cycle = max(batteryData[dataset].cyclenumbers)
             max_cycle_list.append(int(max_cycle))
     else:
-        max_cycle = max(BatteryData.cyclenumbers)
+        max_cycle = max(batteryData[0].cyclenumbers)
         max_cycle_list.append(int(max_cycle))
     return max_cycle_list
 
@@ -352,18 +365,51 @@ def set_axes(x_axis, y_axis):
             y_axis[i] = float(y_axis[i])
         plt.ylim(y_axis)
     except:
-        pass
+        if selectedData.get() == 'dQ/dV curve':
+            plt.ylim([-1000,1000])
     try:
         print(x_axis)
         print(y_axis)
     except:
         pass
 
+def selectFolder():
+    global folder_name
+    folder_name = tk.filedialog.askdirectory()
+    save_figure_button['state'] = tk.NORMAL
+    folder_control = tk.Label(saveImageFrame, text=folder_name, bg="#d2f8c2")
+    folder_control.grid(column=1, row=1, columnspan=2, padx=5, pady=5)
 
 def saveFigure():
     filename = figure_filename_entry.get()
-    plt.savefig(filename + '.png')
+    plt.savefig(str(folder_name) + '/' + filename + '.png')
     return
+
+def chooseFont():
+    global font
+    font = str(fontEntryMode.get())
+    mpl.rc('font', family=font) #https://stackoverflow.com/questions/21933187/how-to-change-legend-fontname-in-matplotlib
+    return font
+
+def fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale):
+    global titleSize, axesSize, legendSize
+    titleSize = int(title_font_size_scale.get())
+    axesSize = int(axes_font_size_scale.get())
+    legendSize = int(legend_font_size_scale.get())
+    return titleSize, axesSize, legendSize
+
+def plotVoltCurves(cycle_numbers, dataset, dataSets,colors, datasetName,counter):
+    for i in range(len(cycle_numbers)):
+        c = counter % 7
+        cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(cycle_numbers[i])  # generates cycle label as neccessary
+        dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers, batteryData[dataset].speCapData, batteryData[dataset].voltageData)
+        pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(), dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c], label=cycle_label)  # check if adding to data on plot or overwriting previous
+        counter += 1
+        displayLegend()
+    return counter
+
+
+
 
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
@@ -389,22 +435,16 @@ addDataFileButton.grid(column = 0,row = 2,padx = 5,pady = 5)
 
 selectedEntryMode = tk.StringVar(main_window)
 selectedEntryMode.set('Calculate (enter initial C-rate):')
-mass_entry_mode = tk.OptionMenu(controlframe, selectedEntryMode, 'Enter Mass Manually:', 'Calculate:',
+mass_entry_mode = tk.OptionMenu(controlframe, selectedEntryMode, 'Enter Mass Manually:', 'Calculate (enter initial C-rate):',
                                 command=onSelectEntryMode)
 mass_entry_mode.grid(column = 0,row = 4, padx = 5, pady = 5)
 #mass_entry_mode.place(relx=0.15, rely=0.4, anchor='center')
 mass_entry_mode.config(width=25)
 mass_entry = tk.Entry(controlframe)
-mass_entry.insert(0,"Active Mass (mg):")
+mass_entry.insert(0,"Initial C-rate")
 mass_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
 
-save_figure_button = tk.Button(controlframe,command = saveFigure, state = tk.DISABLED)
-save_figure_button['text'] = 'Save Figure'
-save_figure_button.grid(column = 0, row = 5, padx = 5, pady = 5)
 
-figure_filename_entry = tk.Entry(controlframe)
-figure_filename_entry.insert(0,'Figure Filename:')
-figure_filename_entry.grid(column = 1,row = 5, padx = 5, pady = 5)
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
 selectedData.set('Specific Capacity') #this is the default dataset
@@ -426,8 +466,20 @@ graph_control = tk.Label(formatFrame,text = "Graph Control", bg = "#b4a7d6")
 graph_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 legend_on = tk.BooleanVar()
-legend_checkbox = tk.Checkbutton(formatFrame, text='Legend', variable=legend_on, onvalue=True, offvalue=False, command=displayLegend, bg="#e9e0ff",state=tk.DISABLED)
-legend_checkbox.grid(column=0, row=4, columnspan=2, padx=5, pady=5)
+legend_checkbox = tk.Checkbutton(formatFrame, text='Display Legend', variable=legend_on, onvalue=True, offvalue=False, command=displayLegend, bg="#e9e0ff")
+legend_checkbox.grid(column=0, row=8, columnspan = 2, padx=5, pady=5)
+
+#font_control = tk.Label(formatFrame,text = "Font", bg = "#e9e0ff", width = 5)
+#font_control.grid(column = 0, row = 4, padx = 5, pady = 5)
+
+font_control = tk.Label(formatFrame,text = "Font Style", bg = "#e9e0ff", width = 10)
+font_control.grid(column = 0, row = 4,padx = 5, pady = 5)
+
+fontEntryMode = tk.StringVar(main_window)
+fontEntryMode.set('Arial')
+font_selected = tk.OptionMenu(formatFrame, fontEntryMode, 'Arial', 'Times New Roman', 'Calibri','Helvetica', 'Serif', 'Algerian', 'Wingdings', command=chooseFont)
+font_selected.grid(column = 1,row = 4,  padx = 6, pady = 5)
+
 
 domain_control = tk.Label(formatFrame,text = "Domain ", bg = "#e9e0ff", width = 15)
 domain_control.grid(column = 0, row = 2, padx = 5, pady = 5)
@@ -447,11 +499,47 @@ set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
 #set_nominal_capacity.insert(0,"180")
 set_nominal_capacity.grid(column = 1,row = 1)
 
+title_font_size = tk.Label(formatFrame, text = "Title Font Size", bg = "#e9e0ff")
+title_font_size.grid(column = 0, row = 5,  padx = 5, pady = 5)
+
+title_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
+title_font_size_scale.grid(column = 1, row = 5,  padx = 5, pady = 5)
+title_font_size_scale.set(12)
+
+axes_font_size = tk.Label(formatFrame, text = "Axes Font Size", bg = "#e9e0ff")
+axes_font_size.grid(column = 0, row = 6,  padx = 5, pady = 5)
+
+axes_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
+axes_font_size_scale.grid(column = 1, row = 6,  padx = 5, pady = 5)
+axes_font_size_scale.set(10)
+
+legend_font_size = tk.Label(formatFrame, text = "Legend Font Size", bg = "#e9e0ff")
+legend_font_size.grid(column = 0, row = 7,  padx = 5, pady = 5)
+
+legend_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
+legend_font_size_scale.grid(column = 1, row = 7,  padx = 5, pady = 5)
+legend_font_size_scale.set(10)
+
+
+saveImageFrame = tk.Frame(main_window, bg = "#00b809")
+saveImageFrame.grid(column = 1, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
+
+graph_save_control = tk.Label(saveImageFrame,text = "Saving Graphs", bg = "#a5f584")
+graph_save_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
+
+save_figure_button = tk.Button(saveImageFrame,command = saveFigure, state = tk.DISABLED)
+save_figure_button['text'] = 'Save Figure'
+save_figure_button.grid(column = 0, row = 2, padx = 5, pady = 5)
+
+figure_filename_entry = tk.Entry(saveImageFrame)
+figure_filename_entry.insert(0,'Figure Filename:')
+figure_filename_entry.grid(column = 1,row = 2, padx = 5, pady = 5)
+
+selectFolderButton = tk.Button(saveImageFrame,command = selectFolder, state = tk.DISABLED)
+selectFolderButton['text'] = 'Select Folder'
+selectFolderButton.grid(column = 0, row = 1, padx = 5, pady = 5)
+
 #legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
 #legend_control.grid(column = 1,row = 1,padx = 5, pady = 5)
-
-
-
 #show_plot()
 main_window.mainloop() #keep window open until closed by user
-
