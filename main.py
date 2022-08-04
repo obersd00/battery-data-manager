@@ -7,6 +7,8 @@ import tkinter as tk
 from file2dataset import file2dataset
 from dataProcesses import *
 import matplotlib as mpl
+from Graphing import plotSpecCapCurves, plotMeanVoltageCurves, plotVoltCurves, plotdQdVCurves
+from Export2Excel import createSheet
 import batteryDataSet
 global batteryData
 global dataSets
@@ -14,10 +16,6 @@ global max_cycle
 global max_cycle_list
 global plotfig
 global fontEntryMode
-
-
-
-
 
 
 #Landt Format
@@ -59,7 +57,7 @@ def show_plot():
         set_nominal_capacity.delete(0, tk.END)
         set_nominal_capacity.insert(0, "180")
     font = chooseFont()
-    titleSize, axesSize, legendSize = fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale)
+    titleSize, axesSize, legendSize, tickSize = fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale, ticks_font_size_scale)
     if batteryData[0].sysFormat == 'Arbin':
         if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
             # print(np.nonzero(batteryData[0].currentData))
@@ -77,6 +75,7 @@ def show_plot():
                                                                       batteryData[dataset].speCapData)
             dataSets[dataset]['Mean Voltage'] = meanVoltage(batteryData[dataset].cyclenumbers,
                                                             batteryData[dataset].currentData,
+                                                            batteryData[dataset].currentData,
                                                             batteryData[dataset].voltageData)
             dataSets[dataset]['Voltage Curve'] = voltageCurve(3, batteryData[dataset].cyclenumbers,
                                                               batteryData[dataset].speCapData,
@@ -93,22 +92,15 @@ def show_plot():
     datasetName = selectedData.get()
     colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
               (0.5, 0, 0.5)]
+    counter = 7
     if datasetName == "Specific Capacity":
-         # normalize color code values to 255
-
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
-                #print(dataSets[dataset].get(datasetName)[0])
-                #print(dataSets[dataset].get(datasetName)[1])
-                dataset_label = 'Cell ' + str(int(dataset+1))
-                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[dataset], label=dataset_label)
-                displayLegend()
-
-
+                counter = plotSpecCapCurves(dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
         # apply default format settings for specific capacity plot
         else:
-            pane1.plot(dataSets[0].get(datasetName)[0], dataSets[0].get(datasetName)[1], '.', c=[0, 0, 0], label = 'Cell 1')
-            displayLegend()
+            dataset = 0
+            counter = plotSpecCapCurves(dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
         pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname=font, fontsize=axesSize)
         pane1.set_title('Specific Capacity',fontname = font, fontsize = titleSize)
@@ -117,19 +109,10 @@ def show_plot():
     elif datasetName == "Mean Voltage":
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
-                print(dataSets[dataset].get(datasetName)[0])
-                print(dataSets[dataset].get(datasetName)[1])
-                dataset_label = 'Cell ' + str(dataset)
-                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0], label = dataset_label)
-                displayLegend()
+                counter = plotMeanVoltageCurves(dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets)
         else:
             dataset = 0
-            print(dataSets[dataset].get(datasetName)[0])
-            print(dataSets[dataset].get(datasetName)[1])
-            dataset_label = 'Cell ' + str(dataset)
-            pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=[0, 0, 0],
-                       label=dataset_label)
-            displayLegend()
+            counter = plotMeanVoltageCurves(dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets)
 
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[2],'*',c=[0,0,0])
@@ -139,51 +122,17 @@ def show_plot():
         set_axes(x_axis, y_axis)
 
     elif datasetName == "Voltage Curve":
-        counter = 7
-        cycle_numbers_string = set_cycle_numbers.get() #retrieve user input providing cycle numbers
-        #convert string input to list of integers
-        cycle_numbers_strings = cycle_numbers_string.split(",") #splits input into cycle numbers
-        cycle_numbers = []
-        for cycle in cycle_numbers_strings:
-            try:
-                cycle_numbers.append(int(cycle)) #checks if cycle numbers are valid integers
-            except:
-                print("Please enter valid input. This is a list of comma separated integers.")
-
+        cycle_numbers = ValidateCycleInput(set_cycle_numbers)
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
         #symbols = ['o', '*', '.']
-        #colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
-                  #(0.5, 0, 0.5)]  # normalize color code values to 255
-        #counter = 7
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
-            #s = counter % 3
-                #for i in range(len(cycle_numbers)):
-                    #c = counter % 7 #allows for changing colors between graphs
-                    #cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i]) #generates cycle label as neccessary
-                    #dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i],batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-                    #pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),dataSets[dataset].get(datasetName)[1].squeeze(),'.',c=colors[c], label=cycle_label) #check if adding to data on plot or overwriting previous
-                    #counter += 1
-                    #displayLegend()
-                counter = plotVoltCurves(cycle_numbers, dataset, dataSets,colors,datasetName,counter)
+                counter = plotVoltCurves(cycle_numbers, dataset, dataSets,colors,datasetName,counter, batteryData, pane1, displayLegend)
         else:
             dataset = 0
-            #for i in range(len(cycle_numbers)):
-             #   c = counter % 7  # allows for changing colors between graphs
-              #  cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(
-               #     cycle_numbers[i])  # generates cycle label as neccessary
-                #dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
-                 #                                                 batteryData[dataset].speCapData,
-                  #                                                batteryData[dataset].voltageData)
-                #pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(),
-                 #          dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c],
-                  #         label=cycle_label)  # check if adding to data on plot or overwriting previous
-                #counter += 1
-                #displayLegend()
-            counter = plotVoltCurves(cycle_numbers, dataset, dataSets, colors, datasetName, counter)
-
+            counter = plotVoltCurves(cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
         pane1.set_xlabel('Specific Capacity (mAh / g)',fontname=font,fontsize=axesSize)
         pane1.set_ylabel('Voltage (V)',fontname=font,fontsize=axesSize)
         pane1.set_title('Voltage', fontname=font, fontsize=titleSize)
@@ -192,15 +141,8 @@ def show_plot():
 
 
     elif datasetName == "dQ/dV curve":
-        cycle_numbers_string = set_cycle_numbers.get()  # retrieve user input providing cycle numbers
-        # convert string input to list of integers
-        cycle_numbers_strings = cycle_numbers_string.split(",")
-        cycle_numbers = []
-        for cycle in cycle_numbers_strings:
-            try:
-                cycle_numbers.append(int(cycle))
-            except:
-                print("Please enter valid input. This is a list of comma separated integers.")
+        cycle_numbers = ValidateCycleInput(set_cycle_numbers)
+
             # Step 1: validate input (a comma-separated list of integers is an acceptable input)
             # Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
             # Step 3: obtain dataset for each cycle specified and add to plot
@@ -211,34 +153,16 @@ def show_plot():
         if batteryData[0].sysFormat == 'Arbin':
             for dataset in range(num_datasets):
             #s = counter % 3
-                for i in range(len(cycle_numbers)):
-                    # s = counter % 3
-                    c = counter % 7
-                    cycle_label = 'Cell ' + str(int(dataset+1)) + ' Cycle ' + str(cycle_numbers[i])
-                    dataSets[dataset]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[dataset].cyclenumbers, batteryData[dataset].speCapData,
-                                                       batteryData[dataset].voltageData)
-                    pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[c], label=cycle_label)
-                    counter += 1
-                    displayLegend()
+                counter = plotdQdVCurves(cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
         else:
             dataset = 0
-            for i in range(len(cycle_numbers)):
-                # s = counter % 3
-                c = counter % 7
-                cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(cycle_numbers[i])
-                dataSets[dataset]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
-                                                             batteryData[dataset].speCapData,
-                                                             batteryData[dataset].voltageData)
-                pane1.plot(dataSets[dataset].get(datasetName)[0], dataSets[dataset].get(datasetName)[1], '.', c=colors[c],
-                           label=cycle_label)
-                counter += 1
-                displayLegend()
+            counter = plotdQdVCurves(cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
         pane1.set_xlabel('Voltage (V)', fontname=font, fontsize=axesSize)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname=font, fontsize=axesSize)
         pane1.set_title('dQ/dV', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
 
-
+    displayTicks(tickSize)
     canvas = FigureCanvasTkAgg(plotfig,master = main_window)
     canvas.draw()
     canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
@@ -252,6 +176,7 @@ def importDataFile():
     global dataSets
     global num_datasets
     global data_selected
+    global infile_name
     infile_name = tk.filedialog.askopenfile().name
     import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
     import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
@@ -303,6 +228,8 @@ def importDataFile():
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
     data_selected = True
+    createSheet(batteryData, dataSets, specificCapacity, meanVoltage, voltageCurve, dQdVcurve, num_datasets)
+    print("Sheet time")
 
 
 
@@ -339,6 +266,21 @@ def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
 def displayLegend():
     if legend_on.get():
         pane1.legend(prop={'size': legendSize})
+
+def displayTicks(tickSize):
+    if toptick_on.get():
+        pane1.xaxis.set_tick_params(top=True, direction="in")
+        plt.xticks(fontsize=tickSize)
+    else:
+        pane1.xaxis.set_tick_params(top=False, direction="in")
+        plt.xticks(fontsize=tickSize)
+    if righttick_on.get():
+        pane1.yaxis.set_tick_params(right=True, direction="in")
+        plt.yticks(fontsize=tickSize)
+    else:
+        pane1.yaxis.set_tick_params(right=False, direction="in")
+        plt.yticks(fontsize=tickSize)
+      #  pane1.plot.yticks(fontsize=ticksize)
 
 
 def findMaxCycle():
@@ -391,25 +333,25 @@ def chooseFont():
     mpl.rc('font', family=font) #https://stackoverflow.com/questions/21933187/how-to-change-legend-fontname-in-matplotlib
     return font
 
-def fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale):
-    global titleSize, axesSize, legendSize
+def fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale, ticks_font_size_scale):
+    global titleSize, axesSize, legendSize, tickSize
     titleSize = int(title_font_size_scale.get())
     axesSize = int(axes_font_size_scale.get())
     legendSize = int(legend_font_size_scale.get())
-    return titleSize, axesSize, legendSize
+    tickSize = int(ticks_font_size_scale.get())
+    return titleSize, axesSize, legendSize, tickSize
 
-def plotVoltCurves(cycle_numbers, dataset, dataSets,colors, datasetName,counter):
-    for i in range(len(cycle_numbers)):
-        c = counter % 7
-        cycle_label = 'Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(cycle_numbers[i])  # generates cycle label as neccessary
-        dataSets[dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], batteryData[dataset].cyclenumbers, batteryData[dataset].speCapData, batteryData[dataset].voltageData)
-        pane1.plot(dataSets[dataset].get(datasetName)[0].squeeze(), dataSets[dataset].get(datasetName)[1].squeeze(), '.', c=colors[c], label=cycle_label)  # check if adding to data on plot or overwriting previous
-        counter += 1
-        displayLegend()
-    return counter
-
-
-
+def ValidateCycleInput(set_cyle_numbers):
+    cycle_numbers_string = set_cycle_numbers.get()  # retrieve user input providing cycle numbers
+    # convert string input to list of integers
+    cycle_numbers_strings = cycle_numbers_string.split(",")
+    cycle_numbers = []
+    for cycle in cycle_numbers_strings:
+        try:
+            cycle_numbers.append(int(cycle))
+        except:
+            print("Please enter valid input. This is a list of comma separated integers.")
+    return cycle_numbers
 
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
@@ -453,7 +395,7 @@ dataSelect.grid(column = 0, row = 3, padx = 5, pady = 5)
 #dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
 dataSelect.config(width = 15)
 
-set_cycle_numbers = tk.Entry(controlframe)
+set_cycle_numbers = tk.Entry(controlframe, state = tk.DISABLED)
 set_cycle_numbers.insert(0,"Cycle number(s):")
 set_cycle_numbers.grid(column = 1,row = 3)
 
@@ -467,7 +409,23 @@ graph_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 legend_on = tk.BooleanVar()
 legend_checkbox = tk.Checkbutton(formatFrame, text='Display Legend', variable=legend_on, onvalue=True, offvalue=False, command=displayLegend, bg="#e9e0ff")
-legend_checkbox.grid(column=0, row=8, columnspan = 2, padx=5, pady=5)
+legend_checkbox.grid(column=0, row=10, columnspan = 2, padx=5, pady=5)
+
+toptick_on = tk.BooleanVar()
+toptick_checkbox = tk.Checkbutton(formatFrame, text='Top Ticks', variable=toptick_on, onvalue=True, offvalue=False, command=displayTicks, bg="#e9e0ff")
+toptick_checkbox.grid(column=0, row=9, padx=5, pady=5)
+
+righttick_on = tk.BooleanVar()
+righttick_checkbox = tk.Checkbutton(formatFrame, text='Right Ticks', variable=righttick_on, onvalue=True, offvalue=False, command=displayTicks, bg="#e9e0ff")
+righttick_checkbox.grid(column=1, row=9, padx=5, pady=5)
+
+#toplabel_on = tk.BooleanVar()
+#toplabel_checkbox = tk.Checkbutton(formatFrame, text='Top Labels', variable=toplabel_on, onvalue=True, offvalue=False, command=displayTicks, bg="#e9e0ff")
+#toplabel_checkbox.grid(column=0, row=9, padx=5, pady=5)
+
+#rightlabel_on = tk.BooleanVar()
+#rightlabel_checkbox = tk.Checkbutton(formatFrame, text='Right Labels', variable=rightlabel_on, onvalue=True, offvalue=False, command=displayTicks, bg="#e9e0ff")
+#rightlabel_checkbox.grid(column=1, row=9, padx=5, pady=5)
 
 #font_control = tk.Label(formatFrame,text = "Font", bg = "#e9e0ff", width = 5)
 #font_control.grid(column = 0, row = 4, padx = 5, pady = 5)
@@ -499,26 +457,33 @@ set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
 #set_nominal_capacity.insert(0,"180")
 set_nominal_capacity.grid(column = 1,row = 1)
 
-title_font_size = tk.Label(formatFrame, text = "Title Font Size", bg = "#e9e0ff")
+title_font_size = tk.Label(formatFrame, text = "Title Font Size:", bg = "#e9e0ff")
 title_font_size.grid(column = 0, row = 5,  padx = 5, pady = 5)
 
 title_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
-title_font_size_scale.grid(column = 1, row = 5,  padx = 5, pady = 5)
+title_font_size_scale.grid(column = 0, row = 6,  padx = 5, pady = 5)
 title_font_size_scale.set(12)
 
-axes_font_size = tk.Label(formatFrame, text = "Axes Font Size", bg = "#e9e0ff")
-axes_font_size.grid(column = 0, row = 6,  padx = 5, pady = 5)
+axes_font_size = tk.Label(formatFrame, text = "Axes Font Size:", bg = "#e9e0ff")
+axes_font_size.grid(column = 1, row = 5,  padx = 5, pady = 5)
 
 axes_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
 axes_font_size_scale.grid(column = 1, row = 6,  padx = 5, pady = 5)
 axes_font_size_scale.set(10)
 
-legend_font_size = tk.Label(formatFrame, text = "Legend Font Size", bg = "#e9e0ff")
+legend_font_size = tk.Label(formatFrame, text = "Legend Font Size:", bg = "#e9e0ff")
 legend_font_size.grid(column = 0, row = 7,  padx = 5, pady = 5)
 
 legend_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
-legend_font_size_scale.grid(column = 1, row = 7,  padx = 5, pady = 5)
-legend_font_size_scale.set(10)
+legend_font_size_scale.grid(column = 0, row = 8,  padx = 5, pady = 5)
+legend_font_size_scale.set(8)
+
+ticks_font_size = tk.Label(formatFrame, text = "Ticks Font Size:", bg = "#e9e0ff")
+ticks_font_size.grid(column = 1, row = 7,  padx = 5, pady = 5)
+
+ticks_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
+ticks_font_size_scale.grid(column = 1, row = 8,  padx = 5, pady = 5)
+ticks_font_size_scale.set(8)
 
 
 saveImageFrame = tk.Frame(main_window, bg = "#00b809")
@@ -532,7 +497,7 @@ save_figure_button['text'] = 'Save Figure'
 save_figure_button.grid(column = 0, row = 2, padx = 5, pady = 5)
 
 figure_filename_entry = tk.Entry(saveImageFrame)
-figure_filename_entry.insert(0,'Figure Filename:')
+figure_filename_entry.insert(0,'Figure Filename')
 figure_filename_entry.grid(column = 1,row = 2, padx = 5, pady = 5)
 
 selectFolderButton = tk.Button(saveImageFrame,command = selectFolder, state = tk.DISABLED)
