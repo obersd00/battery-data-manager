@@ -9,6 +9,7 @@ from dataProcesses import *
 import matplotlib as mpl
 from Graphing import plotSpecCapCurves, plotMeanVoltageCurves, plotVoltCurves, plotdQdVCurves
 from Export2Excel import createSheet
+from pickle import dump,load
 import batteryDataSet
 global batteryData
 global dataSets
@@ -16,7 +17,6 @@ global max_cycle
 global max_cycle_list
 global plotfig
 global fontEntryMode
-
 
 #Landt Format
 #SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab'])
@@ -228,6 +228,12 @@ def importDataFile():
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
     data_selected = True
+    with open('datasetObj.test','wb') as dataSetFile: #save the batteryDataSet class object(s) to a file
+        dump(batteryData,dataSetFile)
+
+    with open('datasetObj.test','rb') as dataSetFile: #load the saved data back in as a batteryDataSet class object
+        batteryData = load(dataSetFile)
+
     createSheet(batteryData, dataSets, specificCapacity, meanVoltage, voltageCurve, dQdVcurve, num_datasets)
     print("Sheet time")
 
