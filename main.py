@@ -17,6 +17,8 @@ global max_cycle
 global max_cycle_list
 global plotfig
 global fontEntryMode
+global is_bdms
+is_bdms = False
 
 
 #Landt Format
@@ -194,10 +196,15 @@ def importDataFile():
     global num_datasets
     global data_selected
     global infile_name
-    infile_name = tk.filedialog.askopenfile().name
-    import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
-    import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
-    batteryData = file2dataset(infile_name)
+    global is_bdms
+    if not is_bdms:
+        infile_name = tk.filedialog.askopenfile().name
+        import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
+        import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
+        batteryData = file2dataset(infile_name)
+    else:
+        import_control = tk.Label(importBDMSFrame, text=infile_name[-20:], bg="#ffffe3")
+        import_control.grid(column=1, row=1, padx=5, pady=5)
     # num_datasets = 1
     if not isinstance(batteryData, list):
         Format = batteryData.sysFormat
@@ -249,16 +256,32 @@ def importDataFile():
     print('%d dataset(s) imported' % num_datasets)
     print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
+    bdms_filename_entry['state'] = tk.NORMAL
+    bdms_filename_entry.insert(0, infile_name)
+    print(batteryData)
+    save_bdms_file_button['state'] = tk.NORMAL
     data_selected = True
+    is_bdms = False
+    return batteryData
 
-    with open('datasetObj.test','wb') as dataSetFile: #save the batteryDataSet class object(s) to a file
-        dump(batteryData,dataSetFile)
 
-    with open('datasetObj.test','rb') as dataSetFile: #load the saved data back in as a batteryDataSet class object
-        batteryData = load(dataSetFile)
+
+
 
     #createSheet(batteryData, dataSets, specificCapacity, meanVoltage, voltageCurve, dQdVcurve, num_datasets)
     #print("Sheet time")
+
+def BDMSfile():
+    global is_bdms
+    global infile_name
+    global batteryData
+    infile_name = tk.filedialog.askopenfile().name
+    is_bdms = True
+    with open(infile_name, 'rb') as dataSetFile:  # load the saved data back in as a batteryDataSet class object
+        batteryData = load(dataSetFile)
+    batteryData = importDataFile()
+    return batteryData
+
 
 
 
@@ -348,8 +371,8 @@ def selectFolder():
     global folder_name
     folder_name = tk.filedialog.askdirectory()
     save_figure_button['state'] = tk.NORMAL
-    folder_control = tk.Label(saveImageFrame, text=folder_name, bg="#d2f8c2")
-    folder_control.grid(column=1, row=1, columnspan=2, padx=5, pady=5)
+    folder_control = tk.Label(saveImageFrame, text=folder_name[-20:], bg="#e7fcde")
+    folder_control.grid(column=3, row=2, columnspan=2, padx=5, pady=5)
 
 def saveFigure():
     filename = figure_filename_entry.get()
@@ -382,6 +405,16 @@ def ValidateCycleInput(set_cyle_numbers):
             print("Please enter valid input. This is a list of comma separated integers.")
     return cycle_numbers
 
+
+def saveBDMSFile():
+    global batteryData
+    with open(bdms_filename_entry.get(), 'wb') as dataSetFile:  # save the batteryDataSet class object(s) to a file
+        dump(batteryData, dataSetFile)
+
+
+
+    return batteryData, dataSetFile
+
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
@@ -400,7 +433,7 @@ plotDataSetButton.grid(column = 0,row = 1,padx = 5, pady = 5)
 #plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
 addDataFileButton = tk.Button(controlframe,command = importDataFile)
-addDataFileButton['text'] = 'Select Data File'
+addDataFileButton['text'] = 'Select Excel File'
 addDataFileButton.grid(column = 0,row = 2,padx = 5,pady = 5)
 #addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
@@ -518,20 +551,47 @@ ticks_font_size_scale.set(8)
 saveImageFrame = tk.Frame(main_window, bg = "#00b809")
 saveImageFrame.grid(column = 1, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
 
-graph_save_control = tk.Label(saveImageFrame,text = "Saving Graphs", bg = "#a5f584")
-graph_save_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
+general_save_control = tk.Label(saveImageFrame,text = "Save BDMS Images and Data Files", bg = "#a5f584")
+general_save_control.grid(column = 0, row = 0, columnspan = 4, padx = 5, pady = 5)
+
+graph_save_control = tk.Label(saveImageFrame,text = "Saving Graphs", bg = "#cbf9b8")
+graph_save_control.grid(column = 2, row = 1, columnspan = 2, padx = 5, pady = 5)
+
+graph_save_control = tk.Label(saveImageFrame,text = "Saving BDMS files", bg = "#cbf9b8")
+graph_save_control.grid(column = 0, row = 1, columnspan = 2, padx = 5, pady = 5)
+
+save_bdms_file_button = tk.Button(saveImageFrame,command = saveBDMSFile, state = tk.DISABLED)
+save_bdms_file_button['text'] = 'Save BDMS File'
+save_bdms_file_button.grid(column = 0, row = 3, columnspan = 2, padx = 5, pady = 5)
+
+bdms_file_save_control = tk.Label(saveImageFrame,text = "File Name")
+bdms_file_save_control.grid(column = 0, row = 2, padx = 5, pady = 5)
+
+bdms_filename_entry = tk.Entry(saveImageFrame, state=tk.DISABLED)
+bdms_filename_entry.grid(column = 1,row = 2, padx = 5, pady = 5)
 
 save_figure_button = tk.Button(saveImageFrame,command = saveFigure, state = tk.DISABLED)
 save_figure_button['text'] = 'Save Figure'
-save_figure_button.grid(column = 0, row = 2, padx = 5, pady = 5)
+save_figure_button.grid(column = 2, row = 3, padx = 5, pady = 5)
 
 figure_filename_entry = tk.Entry(saveImageFrame)
 figure_filename_entry.insert(0,'Figure Filename')
-figure_filename_entry.grid(column = 1,row = 2, padx = 5, pady = 5)
+figure_filename_entry.grid(column = 3,row = 3, padx = 5, pady = 5)
 
 selectFolderButton = tk.Button(saveImageFrame,command = selectFolder, state = tk.DISABLED)
 selectFolderButton['text'] = 'Select Folder'
-selectFolderButton.grid(column = 0, row = 1, padx = 5, pady = 5)
+selectFolderButton.grid(column = 2, row = 2, padx = 5, pady = 5)
+
+importBDMSFrame = tk.Frame(main_window, bg = "#FFFF00")
+importBDMSFrame.grid(column = 2, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
+
+bdms_control = tk.Label(importBDMSFrame,text = "Import BDMS File", bg="#ffffa3")
+bdms_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
+
+addBDMSDataFileButton = tk.Button(importBDMSFrame,command = BDMSfile)
+addBDMSDataFileButton['text'] = 'Select Data File'
+addBDMSDataFileButton.grid(column = 0,row = 1,padx = 5,pady = 5)
+#addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
 #legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
 #legend_control.grid(column = 1,row = 1,padx = 5, pady = 5)
