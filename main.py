@@ -18,8 +18,9 @@ global max_cycle_list
 global plotfig
 global fontEntryMode
 global is_bdms
+global combined_bdms_files
 is_bdms = False
-
+combined_bdms_files = []
 
 #Landt Format
 #SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab'])
@@ -52,7 +53,7 @@ is_bdms = False
 #spec_caps = dataset[1:cyclestats.nrows-1,2]
 
 def show_plot():
-    global dataSets, batteryData, active_mass, nominal_capacity
+    global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files
     try:
         nominal_capacity = int(set_nominal_capacity.get())
     except:
@@ -99,13 +100,19 @@ def show_plot():
               (0.5, 0, 0.5)]
     counter = 7
     if datasetName == "Specific Capacity":
-        if batteryData[0].sysFormat == 'Arbin':
-            for dataset in range(num_datasets):
+        if len(combined_bdms_files) == 0:
+            if batteryData[0].sysFormat == 'Arbin':
+                for dataset in range(num_datasets):
+                    counter = plotSpecCapCurves(dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
+            # apply default format settings for specific capacity plot
+            else:
+                dataset = 0
                 counter = plotSpecCapCurves(dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
-        # apply default format settings for specific capacity plot
         else:
-            dataset = 0
-            counter = plotSpecCapCurves(dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
+            for file in combined_bdms_files:
+                for dataset in range(len(file)):
+                    counter = plotSpecCapCurves(dataset, colors, datasetName, counter, batteryData, pane1,
+                                                displayLegend, dataSets)
         pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
         pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname=font, fontsize=axesSize)
         pane1.set_title('Specific Capacity',fontname = font, fontsize = titleSize)
@@ -196,6 +203,7 @@ def importDataFile():
     global num_datasets
     global data_selected
     global infile_name
+    global combined_bdms_files
     global is_bdms
     if not is_bdms:
         infile_name = tk.filedialog.askopenfile().name
@@ -205,6 +213,7 @@ def importDataFile():
     else:
         import_control = tk.Label(importBDMSFrame, text=infile_name[-20:], bg="#ffffe3")
         import_control.grid(column=1, row=1, padx=5, pady=5)
+        combined_bdms_files.append(batteryData)
     # num_datasets = 1
     if not isinstance(batteryData, list):
         Format = batteryData.sysFormat
@@ -254,16 +263,14 @@ def importDataFile():
 
     print('Detected %s file format' % Format)
     print('%d dataset(s) imported' % num_datasets)
-    print('Ready to Plot')
     plotDataSetButton['state'] = tk.NORMAL
     bdms_filename_entry['state'] = tk.NORMAL
     bdms_filename_entry.insert(0, infile_name)
-    print(batteryData)
+    print(combined_bdms_files)
     save_bdms_file_button['state'] = tk.NORMAL
     data_selected = True
     is_bdms = False
     return batteryData
-
 
 
 
@@ -273,7 +280,7 @@ def importDataFile():
 
 def BDMSfile():
     global is_bdms
-    global infile_name
+    global infile_name, infile_counter
     global batteryData
     infile_name = tk.filedialog.askopenfile().name
     is_bdms = True
@@ -307,13 +314,13 @@ def onSelectEntryMode(self):
         mass_entry.insert(0, '0.1')
         # make prompts & extra textbox active
 
-def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
+#def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
     # returns datasets corresponding to specified cycle numbers
     # mainly for voltage and dqdv curve plotting
-    cycle_dataSets = np.empty([len(cycle_numbers),2]).squeeze()
-    for index in range(len(cycle_numbers)):
-        cycle_dataSets[index] = (np.array([x_datasets[cycle_numbers[index]],y_datasets[cycle_numbers[index]]]))
-    return cycle_dataSets
+    #cycle_dataSets = np.empty([len(cycle_numbers),2]).squeeze()
+    #for index in range(len(cycle_numbers)):
+    #    cycle_dataSets[index] = (np.array([x_datasets[cycle_numbers[index]],y_datasets[cycle_numbers[index]]]))
+    #return cycle_dataSets
 
 def displayLegend():
     if legend_on.get():
