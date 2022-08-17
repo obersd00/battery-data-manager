@@ -41,7 +41,6 @@ def plotVoltCurves(is_bdms,combined_bdms_files, file,cycle_numbers, dataset, dat
     for i in range(len(cycle_numbers)):
         c = counter % 7
         cycle_label = 'File ' + str(int(file+1)) + ' Cell ' + str(int(dataset + 1)) + ' Cycle ' + str(cycle_numbers[i])  # generates cycle label as neccessary
-        print('see this', file)
         #if is_bdms:
         dataSets[file][dataset]['Voltage Curve'] = voltageCurve(cycle_numbers[i], combined_bdms_files[file][dataset].cyclenumbers, combined_bdms_files[file][dataset].speCapData, combined_bdms_files[file][dataset].voltageData)
         #else:

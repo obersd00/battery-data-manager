@@ -54,6 +54,7 @@ combined_bdms_files = []
 
 def show_plot():
     global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files, is_bdms
+
     try:
         nominal_capacity = int(set_nominal_capacity.get())
     except:
@@ -63,49 +64,35 @@ def show_plot():
     font = chooseFont()
     titleSize, axesSize, legendSize, tickSize = fontScale(title_font_size_scale, axes_font_size_scale, legend_font_size_scale, ticks_font_size_scale)
 
-    if batteryData[0].sysFormat == 'Land' or batteryData[0].sysFormat == 'Arbin':
-        if batteryData[0].sysFormat == 'Land':
-            dataset = 0
+    if batteryData[0].sysFormat == 'Arbin' or batteryData[0].sysFormat == 'Land':
         if selectedEntryMode.get() == 'Calculate (enter initial C-rate):':
             # print(np.nonzero(batteryData[0].currentData))
             acive_masses = []
-            for file in combined_bdms_files:
-                #active_masses.append([])
-                for dataset in range(len(file)):
-                    #active_masses[combined_bdms_files.index(file)].append([])
-                    #combined_bdms_files[combined_bdms_files.index(file)][dataset]
-                    active_mass = combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000)
-                    combined_bdms_files[combined_bdms_files.index(file)][dataset].recalculate(active_mass)
-                    #active_masses[combined_bdms_files.index(file)][file.index(dataset)] = active_mass
-              # 180 mAh/g assumed initially, add input options for this later
+            if batteryData[0].sysFormat == 'Arbin':
+                for file in combined_bdms_files:
+                    #active_masses.append([])
+                    for dataset in range(len(file)):
+                        #active_masses[combined_bdms_files.index(file)].append([])
+                        #combined_bdms_files[combined_bdms_files.index(file)][dataset]
+                        active_mass = combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000)
+                        file[dataset].recalculate(active_mass)
+                        #print('3')
+                        #print(combined_bdms_files[0][0].speCapData)
+                        #active_masses[combined_bdms_files.index(file)][file.index(dataset)] = active_mass
+                # 180 mAh/g assumed initially, add input options for this later
+
         elif selectedEntryMode.get() == 'Enter Mass Manually:':
             for dataset in range(num_datasets):
                 active_mass = float(mass_entry.get()) / 1000  # assume entry in mg
                 batteryData[dataset].recalculate(active_mass)
         for file in combined_bdms_files:
-            print('file', file)
-            print(combined_bdms_files)
             for dataset in range(len(file)):
-                print('dataset', dataset)
-                print(combined_bdms_files.index(file))
-                print(combined_bdms_files[combined_bdms_files.index(file)][dataset])
-                #print(dataSets[combined_bdms_files.index(file)][dataset])
-                #print(batteryDataSet)
-                #print(batteryData[combined_bdms_files.index(file)][dataset])
-                #print(dataSets[combined_bdms_files.index(file)][dataset])
-                #print(combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers)
-                #print(combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData)
-                #print(combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData)
-                dataSets[combined_bdms_files.index(file)][dataset]['Specific Capacity'] = specificCapacity(combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,
-                                                                          combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData,
-                                                                          combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData)
-                #print(dataSets[combined_bdms_files.index(file)][dataset])
-                dataSets[combined_bdms_files.index(file)][dataset]['Coulombic Efficiency'] = specificCapacity(combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,
-                                                                          combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData,
-                                                                          combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData)
-                dataSets[combined_bdms_files.index(file)][dataset]['Mean Voltage'] = meanVoltage(combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,
-                                                                combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData,
-                                                                combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
+                dataSets[combined_bdms_files.index(file)][dataset]['Specific Capacity'] = specificCapacity(file[dataset].cyclenumbers,
+                                                                          file[dataset].currentData,file[dataset].speCapData)
+                dataSets[combined_bdms_files.index(file)][dataset]['Coulombic Efficiency'] = specificCapacity(file[dataset].cyclenumbers,
+                                                                          file[dataset].currentData,
+                                                                          file[dataset].speCapData)
+                dataSets[combined_bdms_files.index(file)][dataset]['Mean Voltage'] = meanVoltage(file[dataset].cyclenumbers,file[dataset].currentData,file[dataset].voltageData)
                 #[combined_bdms_files.index(file)][dataset]['Voltage Curve'] = voltageCurve(3, combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,
                  #                                                 combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData,
                   #                                                combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
@@ -162,7 +149,7 @@ def show_plot():
 
 
         pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
-        pane1.set_ylabel('Coulombic Efficiency (mAh / g)', fontname=font, fontsize=axesSize)
+        pane1.set_ylabel('Coulombic Efficiency', fontname=font, fontsize=axesSize)
         pane1.set_title('Coulombic Efficiency',fontname = font, fontsize = titleSize)
         set_axes(x_axis, y_axis)
 
@@ -257,7 +244,9 @@ def importDataFile():
     else:
         import_control = tk.Label(importBDMSFrame, text=infile_name[-20:], bg="#ffffe3")
         import_control.grid(column=1, row=1, padx=5, pady=5)
-        combined_bdms_files.append(batteryData)
+    #print('1')
+    #print(combined_bdms_files[0][0].speCapData)
+    combined_bdms_files.append(batteryData)
     # num_datasets = 1
     dataSets = []
     for file in combined_bdms_files:
@@ -289,7 +278,6 @@ def importDataFile():
 
 
         #dataSets = [[{} for x in file]]
-        print(dataSets)
         #for dataset in range(num_datasets):
          #   dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,
           #                                                            batteryData[dataset].currentData,
@@ -321,17 +309,12 @@ def importDataFile():
     plotDataSetButton['state'] = tk.NORMAL
     bdms_filename_entry['state'] = tk.NORMAL
     bdms_filename_entry.insert(0, infile_name)
-    print(combined_bdms_files)
     save_bdms_file_button['state'] = tk.NORMAL
     data_selected = True
     is_bdms = False
+    #print('2')
+    #print(combined_bdms_files[0][0].speCapData)
     return batteryData
-
-
-
-
-    #createSheet(batteryData, dataSets, specificCapacity, meanVoltage, voltageCurve, dQdVcurve, num_datasets)
-    #print("Sheet time")
 
 def BDMSfile():
     global is_bdms
@@ -343,9 +326,6 @@ def BDMSfile():
         batteryData = load(dataSetFile)
     batteryData = importDataFile()
     return batteryData
-
-
-
 
 def onSelectData(self):
     if (selectedData.get() == 'Voltage Curve' or selectedData.get() == 'dQ/dV curve') and data_selected == True:
@@ -423,12 +403,6 @@ def set_axes(x_axis, y_axis):
     except:
         if selectedData.get() == 'dQ/dV curve':
             plt.ylim([-1000,1000])
-    try:
-        print(x_axis)
-        print(y_axis)
-    except:
-        pass
-
 def selectFolder():
     global folder_name
     folder_name = tk.filedialog.askdirectory()
@@ -579,28 +553,28 @@ title_font_size.grid(column = 0, row = 5,  padx = 5, pady = 5)
 
 title_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
 title_font_size_scale.grid(column = 0, row = 6,  padx = 5, pady = 5)
-title_font_size_scale.set(12)
+title_font_size_scale.set(15)
 
 axes_font_size = tk.Label(formatFrame, text = "Axes Font Size:", bg = "#e9e0ff")
 axes_font_size.grid(column = 1, row = 5,  padx = 5, pady = 5)
 
 axes_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
 axes_font_size_scale.grid(column = 1, row = 6,  padx = 5, pady = 5)
-axes_font_size_scale.set(10)
+axes_font_size_scale.set(14)
 
 legend_font_size = tk.Label(formatFrame, text = "Legend Font Size:", bg = "#e9e0ff")
 legend_font_size.grid(column = 0, row = 7,  padx = 5, pady = 5)
 
 legend_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
 legend_font_size_scale.grid(column = 0, row = 8,  padx = 5, pady = 5)
-legend_font_size_scale.set(8)
+legend_font_size_scale.set(12)
 
 ticks_font_size = tk.Label(formatFrame, text = "Ticks Font Size:", bg = "#e9e0ff")
 ticks_font_size.grid(column = 1, row = 7,  padx = 5, pady = 5)
 
 ticks_font_size_scale = tk.Scale(formatFrame, from_ = 1, to_ = 20, orient = 'horizontal')
 ticks_font_size_scale.grid(column = 1, row = 8,  padx = 5, pady = 5)
-ticks_font_size_scale.set(8)
+ticks_font_size_scale.set(14)
 
 saveImageFrame = tk.Frame(main_window, bg = "#00b809")
 saveImageFrame.grid(column = 1, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
