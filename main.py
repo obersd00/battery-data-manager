@@ -74,7 +74,7 @@ def show_plot():
                     for dataset in range(len(file)):
                         #active_masses[combined_bdms_files.index(file)].append([])
                         #combined_bdms_files[combined_bdms_files.index(file)][dataset]
-                        active_mass = combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000)
+                        active_mass = abs(combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000))
                         file[dataset].recalculate(active_mass)
                         #print('3')
                         #print(combined_bdms_files[0][0].speCapData)
