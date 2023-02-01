@@ -3,7 +3,9 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import xlrd2  # the og xlrd doesn't support .xlsx files but this one is more actively maintained
 import os  # to check directory
 import numpy as np
+
 import tkinter as tk
+from tkinter import ttk
 from file2dataset import file2dataset
 from dataProcesses import *
 import matplotlib as mpl
@@ -237,10 +239,16 @@ def importDataFile():
     global combined_bdms_files
     global is_bdms
     if not is_bdms:
-        infile_name = tk.filedialog.askopenfile().name
-        import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
-        import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
-        batteryData = file2dataset(infile_name)
+        while True:
+            try: #added try/except in case user cancels file input
+                infile_name = tk.filedialog.askopenfile().name
+                import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
+                import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
+                batteryData = file2dataset(infile_name)
+                break
+            except:
+                print("No filename provided")
+                return
     else:
         import_control = tk.Label(importBDMSFrame, text=infile_name[-20:], bg="#ffffe3")
         import_control.grid(column=1, row=1, padx=5, pady=5)
@@ -579,34 +587,35 @@ ticks_font_size_scale.set(14)
 saveImageFrame = tk.Frame(main_window, bg = "#00b809")
 saveImageFrame.grid(column = 1, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
 
-general_save_control = tk.Label(saveImageFrame,text = "Save BDMS Images and Data Files", bg = "#a5f584")
-general_save_control.grid(column = 0, row = 0, columnspan = 4, padx = 5, pady = 5)
+SIF_Tab_Control = ttk.Notebook(saveImageFrame)
+saveImageTab = ttk.Frame(SIF_Tab_Control)
+saveFileTab = ttk.Frame(SIF_Tab_Control)
+SIF_Tab_Control.add(saveImageTab,text = "Save Image")
+SIF_Tab_Control.add(saveFileTab,text = "Save File")
+SIF_Tab_Control.grid(column = 2, row = 1, columnspan = 3 , rowspan = 3, padx = 5, pady = 5)
 
-graph_save_control = tk.Label(saveImageFrame,text = "Saving Graphs", bg = "#cbf9b8")
-graph_save_control.grid(column = 2, row = 1, columnspan = 2, padx = 5, pady = 5)
+general_save_control = tk.Label(saveImageFrame,text = "Save Figures and Datasets", bg = "#a5f584")
+general_save_control.grid(column = 2, row = 0, columnspan = 3, rowspan = 1, padx = 5, pady = 5)
 
-graph_save_control = tk.Label(saveImageFrame,text = "Saving BDMS files", bg = "#cbf9b8")
-graph_save_control.grid(column = 0, row = 1, columnspan = 2, padx = 5, pady = 5)
-
-save_bdms_file_button = tk.Button(saveImageFrame,command = saveBDMSFile, state = tk.DISABLED)
+save_bdms_file_button = tk.Button(saveFileTab,command = saveBDMSFile, state = tk.DISABLED)
 save_bdms_file_button['text'] = 'Save BDMS File'
 save_bdms_file_button.grid(column = 0, row = 3, columnspan = 2, padx = 5, pady = 5)
 
-bdms_file_save_control = tk.Label(saveImageFrame,text = "File Name")
+bdms_file_save_control = tk.Label(saveFileTab,text = "File Name")
 bdms_file_save_control.grid(column = 0, row = 2, padx = 5, pady = 5)
 
-bdms_filename_entry = tk.Entry(saveImageFrame, state=tk.DISABLED)
+bdms_filename_entry = tk.Entry(saveFileTab, state=tk.DISABLED)
 bdms_filename_entry.grid(column = 1,row = 2, padx = 5, pady = 5)
 
-save_figure_button = tk.Button(saveImageFrame,command = saveFigure, state = tk.DISABLED)
+save_figure_button = tk.Button(saveImageTab,command = saveFigure, state = tk.DISABLED)
 save_figure_button['text'] = 'Save Figure'
 save_figure_button.grid(column = 2, row = 3, padx = 5, pady = 5)
 
-figure_filename_entry = tk.Entry(saveImageFrame)
+figure_filename_entry = tk.Entry(saveImageTab)
 figure_filename_entry.insert(0,'Figure Filename')
 figure_filename_entry.grid(column = 3,row = 3, padx = 5, pady = 5)
 
-selectFolderButton = tk.Button(saveImageFrame,command = selectFolder, state = tk.DISABLED)
+selectFolderButton = tk.Button(saveImageTab,command = selectFolder, state = tk.DISABLED)
 selectFolderButton['text'] = 'Select Folder'
 selectFolderButton.grid(column = 2, row = 2, padx = 5, pady = 5)
 
