@@ -3,12 +3,13 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 import xlrd2  # the og xlrd doesn't support .xlsx files but this one is more actively maintained
 import os  # to check directory
 import numpy as np
-
 import tkinter as tk
 from tkinter import ttk
 from file2dataset import file2dataset
 from dataProcesses import *
 import matplotlib as mpl
+import logging
+logging.getLogger('matplotlib.font_manager').disabled = True #because it prints out a tone of warnings if the selected font is not found
 from Graphing import plotSpecCapCurves, plotMeanVoltageCurves, plotVoltCurves, plotdQdVCurves, plotCoulombicEfficiencyCurves
 from Export2Excel import createSheet
 import batteryDataSet
