@@ -21,8 +21,15 @@ global plotfig
 global fontEntryMode
 global is_bdms
 global combined_bdms_files
+global dataset_selection
+global data_selection_tabs
+global dataset_checkboxes
+
 is_bdms = False
 combined_bdms_files = []
+data_selection_tabs = []
+dataset_selection = []
+dataset_checkboxes = []
 
 #Landt Format
 #SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab'])
@@ -55,8 +62,7 @@ combined_bdms_files = []
 #spec_caps = dataset[1:cyclestats.nrows-1,2]
 
 def show_plot():
-    global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files, is_bdms
-
+    global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files, is_bdms, dataset_selection
     try:
         nominal_capacity = int(set_nominal_capacity.get())
     except:
@@ -114,7 +120,8 @@ def show_plot():
         #if is_bdms:
         for file in combined_bdms_files:
             for dataset in range(len(file)):
-                counter = plotSpecCapCurves(is_bdms, combined_bdms_files.index(file), dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
+                if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                    counter = plotSpecCapCurves(is_bdms, combined_bdms_files.index(file), dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
             #else:
              #   dataset = 0
               #  counter = plotSpecCapCurves(is_bdms, combined_bdms_files.index(file), dataset, colors, datasetName, counter, batteryData, pane1, displayLegend,
@@ -144,10 +151,12 @@ def show_plot():
         for file in combined_bdms_files:
             if batteryData[0].sysFormat == 'Arbin':
                 for dataset in range(len(file)):
-                    counter = plotCoulombicEfficiencyCurves(is_bdms, combined_bdms_files.index(file),dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
+                    if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                        counter = plotCoulombicEfficiencyCurves(is_bdms, combined_bdms_files.index(file),dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets)
             else:
                 dataset = 0
-                counter = plotCoulombicEfficiencyCurves(is_bdms, combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1,displayLegend, dataSets)
+                if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                    counter = plotCoulombicEfficiencyCurves(is_bdms, combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1,displayLegend, dataSets)
 
 
         pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
@@ -161,10 +170,12 @@ def show_plot():
         for file in combined_bdms_files:
             if batteryData[0].sysFormat == 'Arbin':
                 for dataset in range(len(file)):
-                    counter = plotMeanVoltageCurves(is_bdms,combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets)
+                    if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                        counter = plotMeanVoltageCurves(is_bdms,combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets)
             else:
                 dataset = 0
-                counter = plotMeanVoltageCurves(is_bdms,combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1,displayLegend, dataSets)
+                if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                    counter = plotMeanVoltageCurves(is_bdms,combined_bdms_files.index(file),dataset, colors, datasetName, counter, batteryData, pane1,displayLegend, dataSets)
 
 
         #pane1.plot(dataSets.get(datasetName)[0],dataSets.get(datasetName)[1],'o',c=[0,0,0])
@@ -181,10 +192,12 @@ def show_plot():
         for file in combined_bdms_files:
             if batteryData[0].sysFormat == 'Arbin':
                 for dataset in range(len(file)):
-                    counter = plotVoltCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets,colors,datasetName,counter, batteryData, pane1, displayLegend)
+                    if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                        counter = plotVoltCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets,colors,datasetName,counter, batteryData, pane1, displayLegend)
             else:
                 dataset = 0
-                counter = plotVoltCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
+                if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                    counter = plotVoltCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
 
 		#Step 1: validate input (a comma-separated list of integers is an acceptable input)
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
@@ -203,19 +216,13 @@ def show_plot():
         for file in combined_bdms_files:
             if batteryData[0].sysFormat == 'Arbin':
                 for dataset in range(len(file)):
-                    counter = plotdQdVCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
+                    if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                        counter = plotdQdVCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
             else:
                 dataset = 0
-                counter = plotdQdVCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
+                if dataset_selection[combined_bdms_files.index(file)][dataset].get():
+                    counter = plotdQdVCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
 
-
-            # Step 1: validate input (a comma-separated list of integers is an acceptable input)
-            # Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
-            # Step 3: obtain dataset for each cycle specified and add to plot
-        # symbols = ['o', '*', '.']
-        #colors = [(0, 0, 0), (0.5, 0, 0), (0, 0.5, 0), (0, 0, 0.5), (0.5, 0.5, 0), (0, 0.5, 0.5),
-                  #(0.5, 0, 0.5)]  # normalize color code values to 255
-        #counter = 8
         pane1.set_xlabel('Voltage (V)', fontname=font, fontsize=axesSize)
         pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname=font, fontsize=axesSize)
         pane1.set_title('dQ/dV', fontname=font, fontsize=titleSize)
@@ -226,9 +233,6 @@ def show_plot():
     canvas.draw()
     canvas.get_tk_widget().grid(column = 1, row = 1, columnspan = 2, rowspan = 2)
     selectFolderButton['state'] = tk.NORMAL
-
-
-
 	
 def importDataFile():
     global batteryData
@@ -241,9 +245,6 @@ def importDataFile():
     global infile_name
     global combined_bdms_files
     global is_bdms
-    data_selection_tabs = []
-    dataset_selection = []
-    dataset_checkboxes = []
     if not is_bdms:
         while True:
             try: #added try/except in case user cancels file input
@@ -282,44 +283,10 @@ def importDataFile():
             dataSets[combined_bdms_files.index(file)].append({})
     if not isinstance(batteryData, list):
         Format = batteryData.sysFormat
-        #dataSets = {}
-        #dataset = 0
-        #for file in range(len(combined_bdms_files)):
-         #   print(file)
-          #  dataSets[file]['Specific Capacity'] = specificCapacity(batteryData[file].cyclenumbers, batteryData[file].currentData,
-           #                                                  batteryData[file].speCapData)
-            #dataSets[file]['Coulombic Efficiency'] = specificCapacity(batteryData[file].cyclenumbers, batteryData[file].currentData,
-             #                                                batteryData[file].speCapData)
-  #          dataSets[file]['Mean Voltage'] = meanVoltage(batteryData[file].cyclenumbers, batteryData[file].currentData,
-   #                                                batteryData[file].voltageData)
-    #        dataSets[file]['Voltage Curve'] = voltageCurve(3, batteryData[file].cyclenumbers, batteryData[file].speCapData,
-     #                                                batteryData[file].voltageData)
-      #      dataSets[file]['dQ/dV curve'] = dQdVcurve(3, batteryData[file].cyclenumbers, batteryData[file].speCapData,
-#                                                batteryData[file].voltageData)
-        #max_cycle = max(BatteryData.cyclenumbers)
-
 
     else:  # list type dataset from arbin
         Format = batteryData[0].sysFormat
         num_datasets = len(batteryData)
-
-
-        #dataSets = [[{} for x in file]]
-        #for dataset in range(num_datasets):
-         #   dataSets[dataset]['Specific Capacity'] = specificCapacity(batteryData[dataset].cyclenumbers,
-          #                                                            batteryData[dataset].currentData,
-           #                                                           batteryData[dataset].speCapData)
-           # dataSets[dataset]['Coulombic Efficiency'] = specificCapacity(batteryData[dataset].cyclenumbers,
-            #                                                          batteryData[dataset].currentData,
-             #                                                         batteryData[dataset].speCapData)
-            #dataSets[dataset]['Mean Voltage'] = meanVoltage(batteryData[dataset].cyclenumbers,
-             #                                               batteryData[dataset].currentData,
-              #                                              batteryData[dataset].voltageData)
-            # dataSets[dataset]['Voltage Curve'] = voltageCurve(3,batteryData[dataset].cyclenumbers,batteryData[
-            # dataset].speCapData,batteryData[dataset].voltageData) dataSets[dataset]['dQ/dV curve'] = dQdVcurve(3,
-            # batteryData[dataset].cyclenumbers,batteryData[dataset].speCapData,batteryData[dataset].voltageData)
-            #max_cycle = max(batteryData[dataset].cyclenumbers)
-            #max_cycle_list.append(int(max_cycle))
         mass_entry['state'] = tk.NORMAL
     if batteryData[0].sysFormat == 'Arbin':
         set_nominal_capacity['state'] = tk.NORMAL
@@ -339,8 +306,6 @@ def importDataFile():
     save_bdms_file_button['state'] = tk.NORMAL
     data_selected = True
     is_bdms = False
-    #print('2')
-    #print(combined_bdms_files[0][0].speCapData)
     return batteryData
 
 def BDMSfile():
@@ -382,14 +347,6 @@ def onSelectEntryMode(self):
         mass_entry.insert(0, '0.1')
         # make prompts & extra textbox active
 
-#def multiCurve(x_datasets,y_datasets,cycle_numbers = [1]):
-    # returns datasets corresponding to specified cycle numbers
-    # mainly for voltage and dqdv curve plotting
-    #cycle_dataSets = np.empty([len(cycle_numbers),2]).squeeze()
-    #for index in range(len(cycle_numbers)):
-    #    cycle_dataSets[index] = (np.array([x_datasets[cycle_numbers[index]],y_datasets[cycle_numbers[index]]]))
-    #return cycle_dataSets
-
 def displayLegend():
     if legend_on.get():
         pane1.legend(prop={'size': legendSize})
@@ -407,8 +364,6 @@ def displayTicks(tickSize):
     else:
         pane1.yaxis.set_tick_params(right=False, direction="in")
         plt.yticks(fontsize=tickSize)
-      #  pane1.plot.yticks(fontsize=ticksize)
-
 
 def findMaxCycle():
     max_cycle_list = []
@@ -420,7 +375,6 @@ def findMaxCycle():
         max_cycle = max(batteryData[0].cyclenumbers)
         max_cycle_list.append(int(max_cycle))
     return max_cycle_list
-
 
 def set_axes(x_axis, y_axis):
     try:
@@ -436,6 +390,7 @@ def set_axes(x_axis, y_axis):
     except:
         if selectedData.get() == 'dQ/dV curve':
             plt.ylim([-1000,1000])
+
 def selectFolder():
     global folder_name
     folder_name = tk.filedialog.askdirectory()
@@ -585,7 +540,6 @@ set_range.grid(column = 1,row = 3)
 nominal_capacity_control = tk.Label(formatFrame,text = "Nominal Capacity (mAh/g)", bg = "#e9e0ff")
 nominal_capacity_control.grid(column = 0, row = 1, padx = 5, pady = 5)
 set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
-#set_nominal_capacity.insert(0,"180")
 set_nominal_capacity.grid(column = 1,row = 1)
 
 title_font_size = tk.Label(formatFrame, text = "Title Font Size:", bg = "#e9e0ff")
@@ -657,15 +611,11 @@ selectDataFrame.grid(column = 2, row = 0, padx = 10, pady = 10, ipadx = 10, ipad
 DS_Tab_Control = ttk.Notebook(selectDataFrame)
 DS_Tab_Control.grid(column = 0, row = 1, rowspan = 5, columnspan = 3, padx = 5, pady = 5)
 
-bdms_control = tk.Label(selectDataFrame,text = "Import BDMS File", bg="#ffffa3")
+bdms_control = tk.Label(selectDataFrame,text = "Data To Be Displayed", bg="#ffffa3")
 bdms_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
 addBDMSDataFileButton = tk.Button(open_saved_bdms,command = BDMSfile)
 addBDMSDataFileButton['text'] = 'Select Data File'
 addBDMSDataFileButton.grid(column = 0,row = 1,padx = 5,pady = 5)
-#addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
-#legend_control = tk.Label(formatFrame, text="Legend", bg= "#e9e0ff")
-#legend_control.grid(column = 1,row = 1,padx = 5, pady = 5)
-#show_plot()
 main_window.mainloop() #keep window open until closed by user
