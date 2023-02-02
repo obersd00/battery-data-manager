@@ -235,27 +235,46 @@ def importDataFile():
     global dataSets
     global num_datasets
     global data_selected
+    global data_selection_tabs
+    global dataset_selection
+    global dataset_checkboxes
     global infile_name
     global combined_bdms_files
     global is_bdms
+    data_selection_tabs = []
+    dataset_selection = []
+    dataset_checkboxes = []
     if not is_bdms:
         while True:
             try: #added try/except in case user cancels file input
                 infile_name = tk.filedialog.askopenfile().name
-                import_control = tk.Label(controlframe, text=infile_name[-20:], bg="#cfe2f3")
-                import_control.grid(column=1, row=2, columnspan=2, padx=5, pady=5)
+                import_control = tk.Label(init_import_tab, text=infile_name[-20:], bg="#cfe2f3")
+                import_control.grid(column=1, row=1, columnspan=2, padx=5, pady=5)
                 batteryData = file2dataset(infile_name)
                 break
             except:
-                print("No filename provided")
+                print("No file provided")
                 return
     else:
-        import_control = tk.Label(importBDMSFrame, text=infile_name[-20:], bg="#ffffe3")
-        import_control.grid(column=1, row=1, padx=5, pady=5)
-    #print('1')
-    #print(combined_bdms_files[0][0].speCapData)
+        while True:
+            try:
+                import_control = tk.Label(open_saved_bdms, text=infile_name[-20:], bg="#ffffe3")
+                import_control.grid(column=1, row=1, padx=5, pady=5)
+                break
+            except:
+                print("No file provided")
+                return
+    data_selection_tabs.append(ttk.Frame(DS_Tab_Control))
+    dataset_selection.append(np.zeros(len(batteryData)).tolist())
+    dataset_checkboxes.append(np.zeros(len(batteryData)).tolist())
+    DS_Tab_Control.add(data_selection_tabs[-1], text=infile_name[-20:])
+    for index in range(len(batteryData)):
+        dataset_selection[-1][index] = tk.BooleanVar()
+        dataset_checkboxes[-1][index] = tk.Checkbutton(data_selection_tabs[-1], text='Cell ' + str(index + 1), variable = dataset_selection[-1][index], onvalue=True,
+                                         offvalue=False)
+        dataset_checkboxes[-1][index].grid(column = 1, columnspan = 3, row = index + 1, rowspan = 1, padx=5, pady=5)
+
     combined_bdms_files.append(batteryData)
-    # num_datasets = 1
     dataSets = []
     for file in combined_bdms_files:
         dataSets.append([])
@@ -328,7 +347,13 @@ def BDMSfile():
     global is_bdms
     global infile_name, infile_counter
     global batteryData
-    infile_name = tk.filedialog.askopenfile().name
+    while True:
+        try:
+            infile_name = tk.filedialog.askopenfile().name
+            break
+        except:
+            print("No file provided")
+            return
     is_bdms = True
     with open(infile_name, 'rb') as dataSetFile:  # load the saved data back in as a batteryDataSet class object
         batteryData = load(dataSetFile)
@@ -465,6 +490,13 @@ main_window.geometry("%ix%i" %(screen_size[0]*3/4,screen_size[1]*3/4))
 controlframe = tk.Frame(main_window,bg="#0b60ad")
 controlframe.grid(column = 0, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
 
+CF_Tab_Control = ttk.Notebook(controlframe)
+init_import_tab = ttk.Frame(CF_Tab_Control)
+open_saved_bdms = ttk.Frame(CF_Tab_Control)
+CF_Tab_Control.add(init_import_tab,text = "Initial Excel File Import")
+CF_Tab_Control.add(open_saved_bdms,text = "Open Saved BDMS File")
+CF_Tab_Control.grid(column = 0, row = 3, columnspan = 3 , rowspan = 3, padx = 5, pady = 5)
+
 import_control = tk.Label(controlframe,text = "File and Dataset Control", bg = "#9fc5e8")
 import_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
@@ -473,32 +505,32 @@ plotDataSetButton['text'] = 'Plot Data'
 plotDataSetButton.grid(column = 0,row = 1,padx = 5, pady = 5)
 #plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
-addDataFileButton = tk.Button(controlframe,command = importDataFile)
+addDataFileButton = tk.Button(init_import_tab,command = importDataFile)
 addDataFileButton['text'] = 'Select Excel File'
-addDataFileButton.grid(column = 0,row = 2,padx = 5,pady = 5)
+addDataFileButton.grid(column = 0,row = 1,padx = 5,pady = 5)
 #addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
 
 selectedEntryMode = tk.StringVar(main_window)
 selectedEntryMode.set('Calculate (enter initial C-rate):')
-mass_entry_mode = tk.OptionMenu(controlframe, selectedEntryMode, 'Enter Mass Manually:', 'Calculate (enter initial C-rate):',
+mass_entry_mode = tk.OptionMenu(init_import_tab, selectedEntryMode, 'Enter Mass Manually:', 'Calculate (enter initial C-rate):',
                                 command=onSelectEntryMode)
-mass_entry_mode.grid(column = 0,row = 4, padx = 5, pady = 5)
+mass_entry_mode.grid(column = 0,row = 2, padx = 5, pady = 5)
 #mass_entry_mode.place(relx=0.15, rely=0.4, anchor='center')
 mass_entry_mode.config(width=25)
-mass_entry = tk.Entry(controlframe)
+mass_entry = tk.Entry(init_import_tab)
 mass_entry.insert(0,"Initial C-rate")
-mass_entry.grid(column = 1, row = 4, padx = 5, pady = 5)
+mass_entry.grid(column = 1, row = 2, padx = 5, pady = 5)
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
 selectedData.set('Specific Capacity') #this is the default dataset
 dataSelect = tk.OptionMenu(controlframe, selectedData, 'Specific Capacity', 'Coulombic Efficiency', 'Mean Voltage', 'Voltage Curve', 'dQ/dV curve',command = onSelectData)
-dataSelect.grid(column = 0, row = 3, padx = 5, pady = 5)
+dataSelect.grid(column = 0, row = 2, padx = 5, pady = 5)
 #dataSelect.place(relx = 0.1, rely = 0.3, anchor = 'center')
 dataSelect.config(width = 15)
 
 set_cycle_numbers = tk.Entry(controlframe, state = tk.DISABLED)
 set_cycle_numbers.insert(0,"Cycle number(s):")
-set_cycle_numbers.grid(column = 1,row = 3)
+set_cycle_numbers.grid(column = 1,row = 2)
 
 #formatframe
 formatFrame = tk.Frame(main_window, bg = "#674ea7")
@@ -619,13 +651,16 @@ selectFolderButton = tk.Button(saveImageTab,command = selectFolder, state = tk.D
 selectFolderButton['text'] = 'Select Folder'
 selectFolderButton.grid(column = 2, row = 2, padx = 5, pady = 5)
 
-importBDMSFrame = tk.Frame(main_window, bg = "#FFFF00")
-importBDMSFrame.grid(column = 2, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
+selectDataFrame = tk.Frame(main_window, bg = "#FFFF00")
+selectDataFrame.grid(column = 2, row = 0, padx = 10, pady = 10, ipadx = 10, ipady = 10)
 
-bdms_control = tk.Label(importBDMSFrame,text = "Import BDMS File", bg="#ffffa3")
+DS_Tab_Control = ttk.Notebook(selectDataFrame)
+DS_Tab_Control.grid(column = 0, row = 1, rowspan = 5, columnspan = 3, padx = 5, pady = 5)
+
+bdms_control = tk.Label(selectDataFrame,text = "Import BDMS File", bg="#ffffa3")
 bdms_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 
-addBDMSDataFileButton = tk.Button(importBDMSFrame,command = BDMSfile)
+addBDMSDataFileButton = tk.Button(open_saved_bdms,command = BDMSfile)
 addBDMSDataFileButton['text'] = 'Select Data File'
 addBDMSDataFileButton.grid(column = 0,row = 1,padx = 5,pady = 5)
 #addDataFileButton.place(relx = 0.1, rely = 0.2, anchor = 'center')
