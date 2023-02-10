@@ -79,16 +79,12 @@ def show_plot():
             acive_masses = []
             if batteryData[0].sysFormat == 'Arbin':
                 for file in combined_bdms_files:
-                    #active_masses.append([])
+                    print(file)
                     for dataset in range(len(file)):
-                        #active_masses[combined_bdms_files.index(file)].append([])
-                        #combined_bdms_files[combined_bdms_files.index(file)][dataset]
-                        active_mass = abs(combined_bdms_files[combined_bdms_files.index(file)][dataset].currentData[np.nonzero(batteryData[0].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000))
+                        print(file[dataset].currentData[np.nonzero(file[dataset].currentData)[0][2]])
+                        print(np.nonzero(file[dataset].currentData))
+                        active_mass = abs(file[dataset].currentData[np.nonzero(file[dataset].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000))
                         file[dataset].recalculate(active_mass)
-                        #print('3')
-                        #print(combined_bdms_files[0][0].speCapData)
-                        #active_masses[combined_bdms_files.index(file)][file.index(dataset)] = active_mass
-                # 180 mAh/g assumed initially, add input options for this later
 
         elif selectedEntryMode.get() == 'Enter Mass Manually:':
             for dataset in range(num_datasets):
@@ -107,7 +103,7 @@ def show_plot():
                   #                                                combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
              #   dataSets[combined_bdms_files.index(file)][file][dataset]['dQ/dV curve'] = dQdVcurve(3, combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData,combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
 
-    plotfig = plt.figure(figsize=(7, 4), dpi=100)
+    plotfig = plt.figure(figsize=(7, 5), dpi=100)
     x_axis = set_domain.get().split(',')
     y_axis = set_range.get().split(',')
 
@@ -266,7 +262,7 @@ def importDataFile():
             except:
                 print("No file provided")
                 return
-    data_selection_tabs.append(ttk.Frame(DS_Tab_Control))
+    data_selection_tabs.append(ttk.Frame(DS_Tab_Control)) #add ui tabs for imported dataset
     dataset_selection.append(np.zeros(len(batteryData)).tolist())
     dataset_checkboxes.append(np.zeros(len(batteryData)).tolist())
     DS_Tab_Control.add(data_selection_tabs[-1], text=infile_name[-20:])
