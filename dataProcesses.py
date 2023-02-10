@@ -35,10 +35,15 @@ def meanVoltage(cycleNumberData,currentData,voltageData): #outputs mean charge/d
         meanVoltageData[cycnum-1] = [cycnum,mean_charge_voltage,mean_discharge_voltage,voltage_hysteresis]
     return meanVoltageData.transpose()
 
-def voltageCurve(cycleNumber,cycleNumberData,speCapData,voltageData): #outputs voltage vs specific capacity for a specified cycle number
-    cycle_indices = np.where(cycleNumberData==cycleNumber)
-    specific_capacity = np.array([speCapData[index] for index in cycle_indices])
-    voltage = np.array([voltageData[index] for index in cycle_indices])
+def voltageCurve(cycleNumber,cycleNumberData,speCapData,voltageData,currentData): #outputs voltage vs specific capacity for a specified cycle number
+    discharge_cycle_indices = np.where(cycleNumberData == cycleNumber and currentData < 0)
+    charge_cycle_indices = np.where(cycleNumberData == cycleNumber and currentData > 0)
+    discharge_specific_capacity = np.array([speCapData[index] for index in discharge_cycle_indices])
+    discharge_voltage = np.array([voltageData[index] for index in discharge_cycle_indices])
+    charge_specific_capacity = np.array([speCapData[index] for index in charge_cycle_indices])
+    charge_voltage = np.array([voltageData[index] for index in charge_cycle_indices])
+    specific_capacity = [charge_specific_capacity,discharge_specific_capacity]
+    voltage = [charge_voltage,discharge_voltage]
     return [specific_capacity,voltage]
 
 def dQdVcurve(cycleNumber,cycleNumberData,speCapData,voltageData): #outputs differential of specific capacity w.r.t. voltage (dQ/dV) as fcn of voltage for a specified cycle number

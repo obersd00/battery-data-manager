@@ -79,10 +79,7 @@ def show_plot():
             acive_masses = []
             if batteryData[0].sysFormat == 'Arbin':
                 for file in combined_bdms_files:
-                    print(file)
                     for dataset in range(len(file)):
-                        print(file[dataset].currentData[np.nonzero(file[dataset].currentData)[0][2]])
-                        print(np.nonzero(file[dataset].currentData))
                         active_mass = abs(file[dataset].currentData[np.nonzero(file[dataset].currentData)[0][2]] / (float(mass_entry.get()) * nominal_capacity/1000))
                         file[dataset].recalculate(active_mass)
 

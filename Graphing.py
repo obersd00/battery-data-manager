@@ -11,28 +11,26 @@ import matplotlib as mpl
 global x
 x=7
 
-def plotSpecCapCurves(is_bdms,file,dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets):
+def plotSpecCapCurves(is_bdms,file,dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets, markersize = 20):
     c = counter % 7
     dataset_label = 'File ' + str(int(file+1)) + ' Cell ' + str(int(dataset + 1))
-    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], '.', c=colors[c],label=dataset_label)
+    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], '.', c=colors[c],label=dataset_label,markersize = markersize)
     displayLegend()
     counter += 1
     return counter
 
-def plotCoulombicEfficiencyCurves(is_bdms,file,dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets):
+def plotCoulombicEfficiencyCurves(is_bdms,file,dataset,colors, datasetName,counter, batteryData, pane1, displayLegend, dataSets, markersize = 20):
     c = counter % 7
     dataset_label = 'File ' + str(int(file+1)) + ' Cell ' + str(int(dataset + 1))
-    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[3], '.', c=colors[c],
-               label=dataset_label)
+    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[3], '.', c=colors[c], label=dataset_label, markersize = markersize)
     displayLegend()
     counter += 1
     return counter
 
-def plotMeanVoltageCurves(is_bdms,file,dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets):
+def plotMeanVoltageCurves(is_bdms,file,dataset, colors, datasetName, counter, batteryData, pane1, displayLegend, dataSets, markersize = 20):
     c = counter % 7
     dataset_label = 'File ' + str(int(file+1)) + ' Cell ' + str(int(dataset) + 1)
-    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], '.', c=colors[c],
-               label=dataset_label)
+    pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], '.', c=colors[c], label=dataset_label, markersize = markersize)
     counter += 1
     displayLegend()
     return counter
@@ -48,7 +46,7 @@ def plotVoltCurves(is_bdms,combined_bdms_files, file,cycle_numbers, dataset, dat
             #                                                  batteryData[dataset].speCapData,
              #                                                 batteryData[dataset].voltageData)
 
-        pane1.plot(dataSets[file][dataset].get(datasetName)[0].squeeze(), dataSets[file][dataset].get(datasetName)[1].squeeze(), '.', c=colors[c], label=cycle_label)  # check if adding to data on plot or overwriting previous
+        pane1.plot(dataSets[file][dataset].get(datasetName)[0].squeeze(), dataSets[file][dataset].get(datasetName)[1].squeeze(), c=colors[c], label=cycle_label)  # check if adding to data on plot or overwriting previous
         counter += 1
         displayLegend()
     return counter
@@ -64,7 +62,7 @@ def plotdQdVCurves(is_bdms,combined_bdms_files, file, cycle_numbers,dataset, dat
          #   dataSets[dataset]['dQ/dV curve'] = dQdVcurve(cycle_numbers[i], batteryData[dataset].cyclenumbers,
           #                                               batteryData[dataset].speCapData,
            #                                              batteryData[dataset].voltageData)
-        pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], '.', c=colors[c],label=cycle_label)
+        pane1.plot(dataSets[file][dataset].get(datasetName)[0], dataSets[file][dataset].get(datasetName)[1], c=colors[c],label=cycle_label)
         counter += 1
         displayLegend()
     return counter
