@@ -36,8 +36,10 @@ def meanVoltage(cycleNumberData,currentData,voltageData): #outputs mean charge/d
     return meanVoltageData.transpose()
 
 def voltageCurve(cycleNumber,cycleNumberData,speCapData,voltageData,currentData): #outputs voltage vs specific capacity for a specified cycle number
-    discharge_cycle_indices = np.where(cycleNumberData == cycleNumber and currentData < 0)
-    charge_cycle_indices = np.where(cycleNumberData == cycleNumber and currentData > 0)
+    discharge_cycle_indices = np.where(cycleNumberData == cycleNumber)# and currentData < 0
+    discharge_cycle_indices = np.array([index for index in discharge_cycle_indices[0] if currentData[index] < 0])
+    charge_cycle_indices = np.where(cycleNumberData == cycleNumber)# and currentData > 0)
+    charge_cycle_indices = np.array([index for index in charge_cycle_indices[0] if currentData[index] > 0])
     discharge_specific_capacity = np.array([speCapData[index] for index in discharge_cycle_indices])
     discharge_voltage = np.array([voltageData[index] for index in discharge_cycle_indices])
     charge_specific_capacity = np.array([speCapData[index] for index in charge_cycle_indices])
