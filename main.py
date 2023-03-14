@@ -136,7 +136,7 @@ def show_plot():
            #         counter = plotSpecCapCurves(dataset, colors, datasetName, counter, batteryData, pane1,
             #                                    displayLegend, dataSets)
         pane1.set_xlabel('Cycle Number', fontname = font, fontsize=axesSize)
-        pane1.set_ylabel('Specific Discharge Capacity (mAh / g)', fontname=font, fontsize=axesSize)
+        pane1.set_ylabel('Specific Discharge Capacity (mAh g'+'\u207b'+'\u00b9'+')', fontname=font, fontsize=axesSize)
         pane1.set_title('Specific Capacity',fontname = font, fontsize = titleSize)
         set_axes(x_axis, y_axis)
 
@@ -197,7 +197,7 @@ def show_plot():
 		#Step 2: convert string input to a list (e.g. numpy array) of cycle numbers to be plotted
 		#Step 3: obtain dataset for each cycle specified and add to plot
         #symbols = ['o', '*', '.']
-        pane1.set_xlabel('Specific Capacity (mAh / g)',fontname=font,fontsize=axesSize)
+        pane1.set_xlabel('Specific Capacity (mAh g'+'\u207b'+'\u00b9'+')',fontname=font,fontsize=axesSize)
         pane1.set_ylabel('Voltage (V)',fontname=font,fontsize=axesSize)
         pane1.set_title('Voltage', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
@@ -218,7 +218,7 @@ def show_plot():
                     counter = plotdQdVCurves(is_bdms,combined_bdms_files,combined_bdms_files.index(file),cycle_numbers, dataset, dataSets, colors, datasetName, counter, batteryData, pane1, displayLegend)
 
         pane1.set_xlabel('Voltage (V)', fontname=font, fontsize=axesSize)
-        pane1.set_ylabel('dQ/dV (mAh / g / V)', fontname=font, fontsize=axesSize)
+        pane1.set_ylabel('dQ/dV (mAh g' +'\u207b'+'\u00b9'+ 'V'+'\u207b'+'\u00b9'+')', fontname=font, fontsize=axesSize)
         pane1.set_title('dQ/dV', fontname=font, fontsize=titleSize)
         set_axes(x_axis, y_axis)
 
@@ -452,7 +452,6 @@ import_control.grid(column = 0, row = 0, columnspan = 2, padx = 5, pady = 5)
 plotDataSetButton = tk.Button(controlframe,command = show_plot,state=tk.DISABLED)
 plotDataSetButton['text'] = 'Plot Data'
 plotDataSetButton.grid(column = 0,row = 1,padx = 5, pady = 5)
-#plotDataSetButton.place(relx = 0.1, rely = 0.1, anchor = 'center')
 
 addDataFileButton = tk.Button(init_import_tab,command = importDataFile)
 addDataFileButton['text'] = 'Select Excel File'
@@ -531,7 +530,7 @@ set_range = tk.Entry(formatFrame)
 set_range.insert(0,"Min, Max")
 set_range.grid(column = 1,row = 3)
 
-nominal_capacity_control = tk.Label(formatFrame,text = "Nominal Capacity (mAh/g)", bg = "#e9e0ff")
+nominal_capacity_control = tk.Label(formatFrame,text = 'Nominal Capacity (mAh g'+'\u207b'+'\u00b9'+')', bg = "#e9e0ff")
 nominal_capacity_control.grid(column = 0, row = 1, padx = 5, pady = 5)
 set_nominal_capacity = tk.Entry(formatFrame,state=tk.DISABLED)
 set_nominal_capacity.grid(column = 1,row = 1)
