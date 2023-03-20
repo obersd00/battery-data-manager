@@ -9,7 +9,7 @@ from file2dataset import file2dataset
 from dataProcesses import *
 import matplotlib as mpl
 import logging
-logging.getLogger('matplotlib.font_manager').disabled = True #because it prints out a tone of warnings if the selected font is not found
+logging.getLogger('matplotlib.font_manager').disabled = True #because it prints out a ton of warnings if the selected font is not found
 from Graphing import plotSpecCapCurves, plotMeanVoltageCurves, plotVoltCurves, plotdQdVCurves, plotCoulombicEfficiencyCurves
 from Export2Excel import createSheet
 import batteryDataSet
@@ -25,12 +25,16 @@ global combined_bdms_files
 global dataset_selection
 global data_selection_tabs
 global dataset_checkboxes
+global screen_size
+global data_labels
+global set_data_label
 
 is_bdms = False
 combined_bdms_files = []
 data_selection_tabs = []
 dataset_selection = []
 dataset_checkboxes = []
+data_labels = []
 
 #Landt Format
 #SHEET_NAMES_LANDT = np.array(['Cycle-Tab','Step-Tab','Record-Tab'])
@@ -63,7 +67,7 @@ dataset_checkboxes = []
 #spec_caps = dataset[1:cyclestats.nrows-1,2]
 
 def show_plot():
-    global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files, is_bdms, dataset_selection
+    global dataSets, batteryData, active_mass, nominal_capacity, combined_bdms_files, is_bdms, dataset_selection, screen_size
     try:
         nominal_capacity = int(set_nominal_capacity.get())
     except:
@@ -100,7 +104,7 @@ def show_plot():
                   #                                                combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
              #   dataSets[combined_bdms_files.index(file)][file][dataset]['dQ/dV curve'] = dQdVcurve(3, combined_bdms_files[combined_bdms_files.index(file)][dataset].cyclenumbers,combined_bdms_files[combined_bdms_files.index(file)][dataset].speCapData,combined_bdms_files[combined_bdms_files.index(file)][dataset].voltageData)
 
-    plotfig = plt.figure(figsize=(7, 5), dpi=100)
+    plotfig = plt.figure(figsize=(7, 4.5), dpi=100)
     x_axis = set_domain.get().split(',')
     y_axis = set_range.get().split(',')
 
@@ -239,6 +243,9 @@ def importDataFile():
     global infile_name
     global combined_bdms_files
     global is_bdms
+    global data_labels
+    global set_data_label
+
     if not is_bdms:
         while True:
             try: #added try/except in case user cancels file input
@@ -262,12 +269,19 @@ def importDataFile():
     data_selection_tabs.append(ttk.Frame(DS_Tab_Control)) #add ui tabs for imported dataset
     dataset_selection.append(np.zeros(len(batteryData)).tolist())
     dataset_checkboxes.append(np.zeros(len(batteryData)).tolist())
-    DS_Tab_Control.add(data_selection_tabs[-1], text=infile_name[-20:])
+    data_labels.append(infile_name[-20:])
+    DS_Tab_Control.add(data_selection_tabs[-1],text = infile_name[-20:])
+    set_data_label = tk.Entry(data_selection_tabs[-1])
+    set_data_label.insert(0,infile_name[-20:])
+    set_data_label.grid(column = 1, columnspan = 2, row = 1, rowspan = 1, padx = 5, pady = 5)
+    update_data_label = tk.Button(data_selection_tabs[-1],command = SetDataLabel)
+    update_data_label['text'] = 'Set'
+    update_data_label.grid(column = 3, columnspan = 1, row = 1, rowspan = 1, padx = 5, pady = 5)
     for index in range(len(batteryData)):
         dataset_selection[-1][index] = tk.BooleanVar()
         dataset_checkboxes[-1][index] = tk.Checkbutton(data_selection_tabs[-1], text='Cell ' + str(index + 1), variable = dataset_selection[-1][index], onvalue=True,
                                          offvalue=False)
-        dataset_checkboxes[-1][index].grid(column = 1, columnspan = 3, row = index + 1, rowspan = 1, padx=5, pady=5)
+        dataset_checkboxes[-1][index].grid(column = 1, columnspan = 3, row = index + 2, rowspan = 1, padx=5, pady=5)
 
     combined_bdms_files.append(batteryData)
     dataSets = []
@@ -430,6 +444,12 @@ def saveBDMSFile():
         dump(batteryData, dataSetFile)
     return batteryData, dataSetFile
 
+def SetDataLabel():
+    global data_labels,data_selection_tabs,set_data_label
+    for index in range(len(data_selection_tabs)):
+        data_labels[index] = set_data_label.get()
+        DS_Tab_Control.tab(data_selection_tabs[index],text = data_labels[index])
+    return
 main_window = tk.Tk()
 main_window.title('Battery Data Manager')
 screen_size = [main_window.winfo_screenwidth(),main_window.winfo_screenheight()]
@@ -466,7 +486,7 @@ mass_entry_mode.grid(column = 0,row = 2, padx = 5, pady = 5)
 #mass_entry_mode.place(relx=0.15, rely=0.4, anchor='center')
 mass_entry_mode.config(width=25)
 mass_entry = tk.Entry(init_import_tab)
-mass_entry.insert(0,"Initial C-rate")
+mass_entry.insert(0,'0.1') #"Initial C-rate"
 mass_entry.grid(column = 1, row = 2, padx = 5, pady = 5)
 
 selectedData = tk.StringVar(main_window) #the selected string from the dropdown list will be stored in this variable
